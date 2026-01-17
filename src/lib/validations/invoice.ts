@@ -6,6 +6,8 @@ export const invoiceItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
   quantity: z.number().int().positive("Quantity must be at least 1"),
   unit_price: z.number().min(0, "Unit price cannot be negative"),
+  part_model: z.string().max(100).optional().nullable(),
+  part_serial: z.string().max(100).optional().nullable(),
 });
 
 export const invoiceSchema = z.object({

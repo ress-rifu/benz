@@ -124,9 +124,11 @@ export async function createInvoice(input: InvoiceInput) {
       type: item.type,
       inventory_item_id: item.inventory_item_id || null,
       description: item.description,
-      quantity: item.quantity,
+      quantity: item.type === "service" ? 1 : item.quantity, // Services always qty 1
       unit_price: item.unit_price,
-      total: item.quantity * item.unit_price,
+      total: (item.type === "service" ? 1 : item.quantity) * item.unit_price,
+      part_model: item.type === "part" ? (item.part_model || null) : null,
+      part_serial: item.type === "part" ? (item.part_serial || null) : null,
     }));
 
     const { error: itemsError } = await supabase

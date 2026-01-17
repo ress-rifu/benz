@@ -195,7 +195,18 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
             <tbody>
               {items.map((item) => (
                 <tr key={item.id} className="border-b border-slate-100">
-                  <td className="py-3">{item.description}</td>
+                  <td className="py-3">
+                    <div>
+                      <p>{item.description}</p>
+                      {item.type === "part" && (item.part_model || item.part_serial) && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          {item.part_model && <span>Model: {item.part_model}</span>}
+                          {item.part_model && item.part_serial && <span> • </span>}
+                          {item.part_serial && <span>Serial: {item.part_serial}</span>}
+                        </p>
+                      )}
+                    </div>
+                  </td>
                   <td className="py-3 text-center">
                     <Badge variant="secondary" className="capitalize">
                       {item.type}

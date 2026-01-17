@@ -212,6 +212,8 @@ export interface Database {
           quantity: number;
           unit_price: number;
           total: number;
+          part_model: string | null;
+          part_serial: string | null;
           created_at: string;
         };
         Insert: {
@@ -223,6 +225,8 @@ export interface Database {
           quantity: number;
           unit_price: number;
           total: number;
+          part_model?: string | null;
+          part_serial?: string | null;
           created_at?: string;
         };
         Update: {

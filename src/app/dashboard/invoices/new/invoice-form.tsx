@@ -94,6 +94,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
     if (service) {
       setValue(`items.${index}.description`, service.name);
       setValue(`items.${index}.unit_price`, service.price);
+      setValue(`items.${index}.quantity`, 1); // Services always have quantity 1
     }
   };
 
@@ -306,106 +307,141 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
         <CardContent className="space-y-4">
           {fields.map((field, index) => {
             const itemType = watch(`items.${index}.type`);
-            const quantity = watch(`items.${index}.quantity`) || 0;
+            const quantity = watch(`items.${index}.quantity`) || (itemType === "service" ? 1 : 0);
             const unitPrice = watch(`items.${index}.unit_price`) || 0;
             const lineTotal = quantity * unitPrice;
 
             return (
               <div
                 key={field.id}
-                className="grid gap-4 rounded-lg border p-4 sm:grid-cols-12"
+                className="rounded-lg border p-4 space-y-4"
               >
-                <div className="sm:col-span-2">
-                  <Label>Type</Label>
-                  <Select
-                    value={itemType}
-                    onValueChange={(value: "part" | "service") =>
-                      setValue(`items.${index}.type`, value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="service">Service</SelectItem>
-                      <SelectItem value="part">Part</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="grid gap-4 sm:grid-cols-12">
+                  <div className="sm:col-span-2">
+                    <Label>Type</Label>
+                    <Select
+                      value={itemType}
+                      onValueChange={(value: "part" | "service") => {
+                        setValue(`items.${index}.type`, value);
+                        if (value === "service") {
+                          setValue(`items.${index}.quantity`, 1);
+                          setValue(`items.${index}.part_model`, "");
+                          setValue(`items.${index}.part_serial`, "");
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="service">Service</SelectItem>
+                        <SelectItem value="part">Part</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div className="sm:col-span-4">
-                  <Label>Description</Label>
+                  <div className={itemType === "part" ? "sm:col-span-3" : "sm:col-span-5"}>
+                    <Label>Description</Label>
+                    {itemType === "part" ? (
+                      <Select
+                        onValueChange={(value) => handlePartSelect(index, value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a part" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {parts.map((part) => (
+                            <SelectItem key={part.id} value={part.id}>
+                              {part.name} ({part.quantity} in stock) - {formatCurrency(part.selling_price)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Select
+                        onValueChange={(value) => handleServiceSelect(index, value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a service" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {services.map((service) => (
+                            <SelectItem key={service.id} value={service.id}>
+                              {service.name} ({service.category_name}) - {formatCurrency(service.price)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  {/* Quantity - only show for parts, services always have qty 1 */}
                   {itemType === "part" ? (
-                    <Select
-                      onValueChange={(value) => handlePartSelect(index, value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a part" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {parts.map((part) => (
-                          <SelectItem key={part.id} value={part.id}>
-                            {part.name} ({part.quantity} in stock) - {formatCurrency(part.selling_price)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="sm:col-span-2">
+                      <Label>Quantity</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        {...register(`items.${index}.quantity`, {
+                          valueAsNumber: true,
+                        })}
+                      />
+                    </div>
                   ) : (
-                    <Select
-                      onValueChange={(value) => handleServiceSelect(index, value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a service" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {services.map((service) => (
-                          <SelectItem key={service.id} value={service.id}>
-                            {service.name} ({service.category_name}) - {formatCurrency(service.price)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <input type="hidden" {...register(`items.${index}.quantity`)} value={1} />
                   )}
+
+                  <div className="sm:col-span-2">
+                    <Label>Unit Price</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      {...register(`items.${index}.unit_price`, {
+                        valueAsNumber: true,
+                      })}
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 flex items-end">
+                    <div>
+                      <Label className="text-slate-400">Total</Label>
+                      <p className="text-sm font-medium mt-2">{formatCurrency(lineTotal)}</p>
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-1 flex items-end justify-end">
+                    {fields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => remove(index)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
-                <div className="sm:col-span-2">
-                  <Label>Quantity</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    {...register(`items.${index}.quantity`, {
-                      valueAsNumber: true,
-                    })}
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <Label>Unit Price</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register(`items.${index}.unit_price`, {
-                      valueAsNumber: true,
-                    })}
-                  />
-                </div>
-
-                <div className="sm:col-span-1 flex items-end">
-                  <p className="text-sm font-medium">{formatCurrency(lineTotal)}</p>
-                </div>
-
-                <div className="sm:col-span-1 flex items-end justify-end">
-                  {fields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => remove(index)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  )}
-                </div>
+                {/* Model and Serial fields - only for parts */}
+                {itemType === "part" && (
+                  <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-dashed">
+                    <div className="space-y-2">
+                      <Label>Part Model</Label>
+                      <Input
+                        placeholder="Enter model number"
+                        {...register(`items.${index}.part_model`)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Serial Number</Label>
+                      <Input
+                        placeholder="Enter serial number"
+                        {...register(`items.${index}.part_serial`)}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
