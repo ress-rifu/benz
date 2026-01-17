@@ -3,9 +3,11 @@ import { TableSkeleton } from "@/components/skeletons/table-skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ServiceCategoriesTable } from "./service-categories-table";
 import { PartCategoriesTable } from "./part-categories-table";
+import { PartBrandsTable } from "./part-brands-table";
 import { CategoriesHeader } from "./categories-header";
 import { getUser } from "@/lib/auth/get-user";
 import { redirect } from "next/navigation";
+import { getPartCategories, getPartBrands } from "./actions";
 
 export default async function CategoriesPage() {
     const user = await getUser();
@@ -15,15 +17,22 @@ export default async function CategoriesPage() {
     }
     
     const isSuperAdmin = user.role === "super_admin";
+    
+    // Fetch data for brands tab
+    const [categories, brands] = await Promise.all([
+        getPartCategories(),
+        getPartBrands(),
+    ]);
 
     return (
         <div className="space-y-6">
-            <CategoriesHeader isSuperAdmin={isSuperAdmin} />
+            <CategoriesHeader isSuperAdmin={isSuperAdmin} categories={categories} />
 
             <Tabs defaultValue="services" className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="services">Service Categories</TabsTrigger>
                     <TabsTrigger value="parts">Part Categories</TabsTrigger>
+                    <TabsTrigger value="brands">Part Brands</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="services">
@@ -36,6 +45,14 @@ export default async function CategoriesPage() {
                     <Suspense fallback={<TableSkeleton columns={4} rows={8} />}>
                         <PartCategoriesTable isSuperAdmin={isSuperAdmin} />
                     </Suspense>
+                </TabsContent>
+
+                <TabsContent value="brands">
+                    <PartBrandsTable 
+                        brands={brands as any} 
+                        categories={categories} 
+                        isSuperAdmin={isSuperAdmin} 
+                    />
                 </TabsContent>
             </Tabs>
         </div>

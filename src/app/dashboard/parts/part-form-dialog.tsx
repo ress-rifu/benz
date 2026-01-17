@@ -52,6 +52,8 @@ export function PartFormDialog({
         handleSubmit,
         reset,
         control,
+        watch,
+        setValue,
         formState: { errors },
     } = useForm<PartInput>({
         resolver: zodResolver(partSchema),
@@ -78,6 +80,28 @@ export function PartFormDialog({
                 is_active: true,
             },
     });
+
+    // Watch category to filter brands
+    const selectedCategoryId = watch("category_id");
+    
+    // Filter brands by selected category
+    const filteredBrands = brands.filter(
+        (brand) => brand.category_id === selectedCategoryId || !brand.category_id
+    );
+
+    // Reset brand when category changes (only for new parts)
+    useEffect(() => {
+        if (!isEditing && selectedCategoryId) {
+            // Check if current brand belongs to the selected category
+            const currentBrandId = watch("brand_id");
+            if (currentBrandId) {
+                const currentBrand = brands.find((b) => b.id === currentBrandId);
+                if (currentBrand && currentBrand.category_id && currentBrand.category_id !== selectedCategoryId) {
+                    setValue("brand_id", "");
+                }
+            }
+        }
+    }, [selectedCategoryId, brands, isEditing, setValue, watch]);
 
     useEffect(() => {
         if (open) {
@@ -197,12 +221,22 @@ export function PartFormDialog({
                                 name="brand_id"
                                 control={control}
                                 render={({ field }) => (
-                                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                                    <Select 
+                                        onValueChange={field.onChange} 
+                                        value={field.value || ""}
+                                        disabled={!selectedCategoryId}
+                                    >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select a brand" />
+                                            <SelectValue placeholder={
+                                                !selectedCategoryId 
+                                                    ? "Select a category first" 
+                                                    : filteredBrands.length === 0 
+                                                        ? "No brands for this category" 
+                                                        : "Select a brand"
+                                            } />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {brands.map((brand) => (
+                                            {filteredBrands.map((brand) => (
                                                 <SelectItem key={brand.id} value={brand.id}>
                                                     {brand.name} {brand.country_of_origin && `(${brand.country_of_origin})`}
                                                 </SelectItem>
@@ -211,6 +245,11 @@ export function PartFormDialog({
                                     </Select>
                                 )}
                             />
+                            {selectedCategoryId && filteredBrands.length === 0 && (
+                                <p className="text-xs text-amber-600">
+                                    No brands available for this category. Add brands in Categories page.
+                                </p>
+                            )}
                         </div>
                     </div>
 

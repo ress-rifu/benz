@@ -5,28 +5,36 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { ServiceCategoryFormDialog } from "./service-category-form-dialog";
 import { PartCategoryFormDialog } from "./part-category-form-dialog";
+import { PartBrandFormDialog } from "./part-brand-form-dialog";
+import type { Tables } from "@/types/database";
 
 interface CategoriesHeaderProps {
     isSuperAdmin: boolean;
+    categories: Tables<"part_categories">[];
 }
 
-export function CategoriesHeader({ isSuperAdmin }: CategoriesHeaderProps) {
+export function CategoriesHeader({ isSuperAdmin, categories }: CategoriesHeaderProps) {
     const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
     const [partDialogOpen, setPartDialogOpen] = useState(false);
+    const [brandDialogOpen, setBrandDialogOpen] = useState(false);
 
     return (
         <>
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Categories</h1>
+                    <h1 className="text-2xl font-bold text-slate-900">Categories & Brands</h1>
                     <p className="text-sm text-slate-500">
                         {isSuperAdmin 
-                            ? "Manage service and part categories" 
-                            : "View service and part categories"}
+                            ? "Manage service categories, part categories, and brands" 
+                            : "View service categories, part categories, and brands"}
                     </p>
                 </div>
                 {isSuperAdmin && (
                     <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => setBrandDialogOpen(true)}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Brand
+                        </Button>
                         <Button variant="outline" onClick={() => setPartDialogOpen(true)}>
                             <Plus className="mr-2 h-4 w-4" />
                             Add Part Category
@@ -42,6 +50,11 @@ export function CategoriesHeader({ isSuperAdmin }: CategoriesHeaderProps) {
                 <>
                     <ServiceCategoryFormDialog open={serviceDialogOpen} onOpenChange={setServiceDialogOpen} />
                     <PartCategoryFormDialog open={partDialogOpen} onOpenChange={setPartDialogOpen} />
+                    <PartBrandFormDialog 
+                        open={brandDialogOpen} 
+                        onOpenChange={setBrandDialogOpen} 
+                        categories={categories}
+                    />
                 </>
             )}
         </>

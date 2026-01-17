@@ -421,6 +421,7 @@ export interface Database {
         Row: {
           id: string;
           name: string;
+          category_id: string | null;
           country_of_origin: string | null;
           is_active: boolean;
           created_at: string;
@@ -429,6 +430,7 @@ export interface Database {
         Insert: {
           id?: string;
           name: string;
+          category_id?: string | null;
           country_of_origin?: string | null;
           is_active?: boolean;
           created_at?: string;
@@ -437,12 +439,21 @@ export interface Database {
         Update: {
           id?: string;
           name?: string;
+          category_id?: string | null;
           country_of_origin?: string | null;
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "part_brands_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "part_categories";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       parts: {
         Row: {
