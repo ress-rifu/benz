@@ -32,8 +32,6 @@ function getRedis(): Redis | null {
 export const redis = getRedis();
 
 export const CACHE_KEYS = {
-  INVENTORY: "inventory:all",
-  INVENTORY_ITEM: (id: string) => `inventory:${id}`,
   SERVICE_CATEGORIES: "service:categories",
   SERVICES: "services:all",
   SERVICE: (id: string) => `service:${id}`,

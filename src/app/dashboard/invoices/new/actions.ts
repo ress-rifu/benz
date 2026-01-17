@@ -49,11 +49,11 @@ export async function createInvoice(input: InvoiceInput) {
 
     // Validate stock availability for parts
     const partItems = data.items.filter(
-      (item) => item.type === "part" && item.inventory_item_id
+      (item) => item.type === "part" && item.part_id
     );
 
     if (partItems.length > 0) {
-      const partIds = partItems.map((p) => p.inventory_item_id!);
+      const partIds = partItems.map((p) => p.part_id!);
       const { data: partsData } = await supabase
         .from("parts")
         .select("id, name, quantity")
@@ -61,7 +61,7 @@ export async function createInvoice(input: InvoiceInput) {
 
       for (const partItem of partItems) {
         const part = partsData?.find(
-          (p) => p.id === partItem.inventory_item_id
+          (p) => p.id === partItem.part_id
         );
 
         if (!part) {
@@ -121,7 +121,7 @@ export async function createInvoice(input: InvoiceInput) {
     const invoiceItems = data.items.map((item) => ({
       invoice_id: invoice.id,
       type: item.type,
-      inventory_item_id: item.inventory_item_id || null,
+      part_id: item.part_id || null,
       description: item.description,
       quantity: item.type === "service" ? 1 : item.quantity, // Services always qty 1
       unit_price: item.unit_price,
@@ -140,13 +140,13 @@ export async function createInvoice(input: InvoiceInput) {
       return { error: "Failed to create invoice items" };
     }
 
-    // Deduct inventory for parts (transaction-safe)
+    // Deduct stock for parts (transaction-safe)
     for (const partItem of partItems) {
       // Get current quantity from parts table
       const { data: currentPart } = await supabase
         .from("parts")
         .select("quantity")
-        .eq("id", partItem.inventory_item_id!)
+        .eq("id", partItem.part_id!)
         .single();
 
       if (!currentPart) continue;
@@ -157,16 +157,16 @@ export async function createInvoice(input: InvoiceInput) {
       const { error: updateError } = await supabase
         .from("parts")
         .update({ quantity: newQuantity })
-        .eq("id", partItem.inventory_item_id!);
+        .eq("id", partItem.part_id!);
 
       if (updateError) {
         console.error("Failed to update part quantity:", updateError);
         continue;
       }
 
-      // Create inventory log
-      await supabase.from("inventory_logs").insert({
-        inventory_item_id: partItem.inventory_item_id!,
+      // Create part stock log
+      await supabase.from("part_stock_logs").insert({
+        part_id: partItem.part_id!,
         action: "invoice_deduct",
         quantity_change: -partItem.quantity,
         previous_quantity: currentPart.quantity,
@@ -178,11 +178,11 @@ export async function createInvoice(input: InvoiceInput) {
     }
 
     // Invalidate caches
-    await invalidateCache(CACHE_KEYS.INVENTORY);
+    await invalidateCache(CACHE_KEYS.PARTS);
     await invalidateCache(CACHE_KEYS.DASHBOARD_SUMMARY);
 
     revalidatePath("/dashboard/invoices");
-    revalidatePath("/dashboard/inventory");
+    revalidatePath("/dashboard/parts");
     revalidatePath("/dashboard");
 
     return { success: true, invoiceId: invoice.id };

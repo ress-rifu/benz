@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const invoiceItemSchema = z.object({
   type: z.enum(["part", "service"]),
-  inventory_item_id: z.string().uuid().optional().nullable(),
+  part_id: z.string().uuid().optional().nullable(),
   description: z.string().min(1, "Description is required"),
   quantity: z.number().int().positive("Quantity must be at least 1"),
   unit_price: z.number().min(0, "Unit price cannot be negative"),

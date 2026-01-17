@@ -129,15 +129,15 @@ export async function deleteAdmin(userId: string) {
       };
     }
 
-    // Transfer inventory logs to the current super admin
+    // Transfer part stock logs to the current super admin
     const { error: logTransferError } = await supabase
-      .from("inventory_logs")
+      .from("part_stock_logs")
       .update({ user_id: currentUser.id })
       .eq("user_id", userId);
 
     if (logTransferError) {
-      console.error("Failed to transfer inventory logs:", logTransferError);
-      return { error: "Failed to transfer user's inventory logs" };
+      console.error("Failed to transfer part stock logs:", logTransferError);
+      return { error: "Failed to transfer user's part stock logs" };
     }
 
     // Delete from users table first
@@ -161,7 +161,7 @@ export async function deleteAdmin(userId: string) {
 
     revalidatePath("/dashboard/admins");
     revalidatePath("/dashboard/invoices");
-    revalidatePath("/dashboard/inventory");
+    revalidatePath("/dashboard/parts");
     return { success: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "An error occurred" };

@@ -83,7 +83,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
   const handlePartSelect = (index: number, partId: string) => {
     const part = parts.find((p) => p.id === partId);
     if (part) {
-      setValue(`items.${index}.inventory_item_id`, part.id);
+      setValue(`items.${index}.part_id`, part.id);
       setValue(`items.${index}.description`, part.name);
       setValue(`items.${index}.unit_price`, part.selling_price);
     }
@@ -296,7 +296,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                     description: "",
                     quantity: 1,
                     unit_price: 0,
-                    inventory_item_id: undefined,
+                    part_id: undefined,
                   })
                 }
               >

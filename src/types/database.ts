@@ -41,46 +41,10 @@ export interface Database {
         };
         Relationships: [];
       };
-      inventory_items: {
+      part_stock_logs: {
         Row: {
           id: string;
-          name: string;
-          sku: string;
-          quantity: number;
-          cost_price: number;
-          selling_price: number;
-          description: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          sku: string;
-          quantity: number;
-          cost_price: number;
-          selling_price: number;
-          description?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          sku?: string;
-          quantity?: number;
-          cost_price?: number;
-          selling_price?: number;
-          description?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      inventory_logs: {
-        Row: {
-          id: string;
-          inventory_item_id: string;
+          part_id: string;
           action: "add" | "remove" | "adjust" | "invoice_deduct";
           quantity_change: number;
           previous_quantity: number;
@@ -92,7 +56,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          inventory_item_id: string;
+          part_id: string;
           action: "add" | "remove" | "adjust" | "invoice_deduct";
           quantity_change: number;
           previous_quantity: number;
@@ -104,7 +68,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          inventory_item_id?: string;
+          part_id?: string;
           action?: "add" | "remove" | "adjust" | "invoice_deduct";
           quantity_change?: number;
           previous_quantity?: number;
@@ -116,21 +80,21 @@ export interface Database {
         };
         Relationships: [
           {
-            foreignKeyName: "inventory_logs_inventory_item_id_fkey";
-            columns: ["inventory_item_id"];
+            foreignKeyName: "part_stock_logs_part_id_fkey";
+            columns: ["part_id"];
             isOneToOne: false;
-            referencedRelation: "inventory_items";
+            referencedRelation: "parts";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "inventory_logs_user_id_fkey";
+            foreignKeyName: "part_stock_logs_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "inventory_logs_invoice_id_fkey";
+            foreignKeyName: "part_stock_logs_invoice_id_fkey";
             columns: ["invoice_id"];
             isOneToOne: false;
             referencedRelation: "invoices";
@@ -203,7 +167,7 @@ export interface Database {
           id: string;
           invoice_id: string;
           type: "part" | "service";
-          inventory_item_id: string | null;
+          part_id: string | null;
           description: string;
           quantity: number;
           unit_price: number;
@@ -216,7 +180,7 @@ export interface Database {
           id?: string;
           invoice_id: string;
           type: "part" | "service";
-          inventory_item_id?: string | null;
+          part_id?: string | null;
           description: string;
           quantity: number;
           unit_price: number;
@@ -229,7 +193,7 @@ export interface Database {
           id?: string;
           invoice_id?: string;
           type?: "part" | "service";
-          inventory_item_id?: string | null;
+          part_id?: string | null;
           description?: string;
           quantity?: number;
           unit_price?: number;
@@ -245,10 +209,10 @@ export interface Database {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "invoice_items_inventory_item_id_fkey";
-            columns: ["inventory_item_id"];
+            foreignKeyName: "invoice_items_part_id_fkey";
+            columns: ["part_id"];
             isOneToOne: false;
-            referencedRelation: "inventory_items";
+            referencedRelation: "parts";
             referencedColumns: ["id"];
           }
         ];
@@ -572,7 +536,7 @@ export interface Database {
     };
     Enums: {
       user_role: UserRole;
-      inventory_action: "add" | "remove" | "adjust" | "invoice_deduct";
+      part_stock_action: "add" | "remove" | "adjust" | "invoice_deduct";
       invoice_item_type: "part" | "service";
     };
     CompositeTypes: {
