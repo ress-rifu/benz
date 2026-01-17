@@ -35,7 +35,22 @@ interface InvoiceViewProps {
 
 export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByName }: InvoiceViewProps) {
   const handlePrint = () => {
-    window.print();
+    // Wait for all images to load before printing
+    const images = document.querySelectorAll('img');
+    const imagePromises = Array.from(images).map((img) => {
+      if (img.complete) return Promise.resolve();
+      return new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+    });
+
+    Promise.all(imagePromises).then(() => {
+      // Small additional delay to ensure browser paint is complete
+      setTimeout(() => {
+        window.print();
+      }, 150);
+    });
   };
 
   return (
