@@ -56,7 +56,7 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
   return (
     <div className="space-y-6">
       {/* Header Actions - Hidden on Print */}
-      <div className="flex items-center justify-between no-print">
+      <div className="flex items-center justify-between" data-print-hide="true">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard/invoices">
@@ -80,7 +80,8 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
 
       {/* Invoice Document */}
       <div
-        className="mx-auto max-w-4xl rounded-lg border bg-white p-8 shadow-sm print:shadow-none print:border-0"
+        data-invoice-document="true"
+        className="mx-auto max-w-4xl rounded-lg border bg-white p-8 shadow-sm print:shadow-none print:border-0 print:max-w-none print:mx-0"
         style={
           {
             "--invoice-primary": settings.primary_color,

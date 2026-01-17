@@ -88,11 +88,6 @@
     display: block !important;
   }
 
-  /* Hide everything in body by default */
-  body > div {
-    visibility: hidden !important;
-  }
-
   /* Hide dashboard layout elements when printing */
   aside,
   header,
@@ -100,14 +95,32 @@
     display: none !important;
   }
 
-  /* Hide main content when modal is open */
+  /* Reset main content for printing (don't hide it!) */
   main {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Hide elements with data-print-hide attribute */
+  [data-print-hide="true"] {
     display: none !important;
   }
 
-  /* Show only the dialog portal */
+  /* ========================================
+     MODAL PRINTING STYLES
+     Only apply when a modal is open
+     ======================================== */
+  
+  /* When modal is open, hide everything except the portal */
+  body:has([data-radix-portal]) > div:not([data-radix-portal]) {
+    display: none !important;
+  }
+
+  /* Show the dialog portal */
   [data-radix-portal] {
-    visibility: visible !important;
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
@@ -119,9 +132,8 @@
     display: none !important;
   }
 
-  /* Dialog/Modal print styles - make it the only visible content */
+  /* Dialog/Modal print styles */
   [role="dialog"] {
-    visibility: visible !important;
     position: static !important;
     transform: none !important;
     left: 0 !important;
@@ -137,14 +149,19 @@
     background: white !important;
   }
 
-  /* Make dialog content visible */
-  [role="dialog"] * {
-    visibility: visible !important;
-  }
-
-  /* Hide elements with data-print-hide attribute */
-  [data-print-hide="true"] {
-    display: none !important;
+  /* ========================================
+     INVOICE DOCUMENT PRINT STYLES
+     ======================================== */
+  
+  /* Make invoice document take full width */
+  .invoice-document,
+  [data-invoice-document="true"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   /* Ensure backgrounds and colors print correctly */
