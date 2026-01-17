@@ -20,7 +20,6 @@ interface DashboardContentProps {
 }
 
 interface DashboardSummary {
-  totalInventoryItems: number;
   lowStockItems: number;
   totalInvoices: number;
   totalRevenue: number;
@@ -57,8 +56,7 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
     CACHE_KEYS.DASHBOARD_SUMMARY,
     async () => {
       const [
-        inventoryResult,
-        lowStockResult,
+        lowStockPartsResult,
         invoicesResult,
         revenueResult,
         weeklyRevenueResult,
@@ -70,8 +68,8 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
         recentResult,
         dailyRevenueResult,
       ] = await Promise.all([
-        supabase.from("inventory_items").select("*", { count: "exact", head: true }),
-        supabase.from("inventory_items").select("*", { count: "exact", head: true }).lt("quantity", 10),
+        // Low stock: parts where quantity is below min_stock_level
+        supabase.from("parts").select("id, quantity, min_stock_level").eq("is_active", true),
         supabase.from("invoices").select("*", { count: "exact", head: true }),
         // All invoices count as revenue (no status filter - invoices are created when paid)
         supabase.from("invoices").select("total"),
@@ -126,9 +124,13 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
         invoices: data.invoices,
       }));
 
+      // Calculate low stock items: parts where quantity < min_stock_level
+      const lowStockItems = lowStockPartsResult.data?.filter(
+        (part) => part.quantity < (part.min_stock_level || 5)
+      ).length || 0;
+
       return {
-        totalInventoryItems: inventoryResult.count || 0,
-        lowStockItems: lowStockResult.count || 0,
+        lowStockItems,
         totalInvoices: invoicesResult.count || 0,
         totalRevenue,
         totalCustomers: customersResult.count || 0,

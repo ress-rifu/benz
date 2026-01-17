@@ -316,7 +316,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
             return (
               <div
                 key={field.id}
-                className="rounded-lg border p-3 sm:p-4 space-y-4"
+                className="rounded-lg border p-3 sm:p-4"
               >
                 {/* Mobile Layout */}
                 <div className="flex flex-col gap-3 sm:hidden">
@@ -413,6 +413,28 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                       <p className="text-sm font-medium mt-1.5">{formatCurrency(lineTotal)}</p>
                     </div>
                   </div>
+
+                  {/* Model and Serial fields - Mobile (only for parts) */}
+                  {itemType === "part" && (
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-dashed">
+                      <div>
+                        <Label className="text-xs">Model</Label>
+                        <Input
+                          placeholder="Model #"
+                          className="h-9"
+                          {...register(`items.${index}.part_model`)}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Serial</Label>
+                        <Input
+                          placeholder="Serial #"
+                          className="h-9"
+                          {...register(`items.${index}.part_serial`)}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Desktop Layout */}
@@ -521,27 +543,27 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                       </Button>
                     )}
                   </div>
-                </div>
 
-                {/* Model and Serial fields - only for parts */}
-                {itemType === "part" && (
-                  <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-dashed">
-                    <div className="space-y-2">
-                      <Label>Part Model</Label>
-                      <Input
-                        placeholder="Enter model number"
-                        {...register(`items.${index}.part_model`)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Serial Number</Label>
-                      <Input
-                        placeholder="Enter serial number"
-                        {...register(`items.${index}.part_serial`)}
-                      />
-                    </div>
-                  </div>
-                )}
+                  {/* Model and Serial fields - Desktop (only for parts) */}
+                  {itemType === "part" && (
+                    <>
+                      <div className="sm:col-span-6 pt-2 border-t border-dashed">
+                        <Label className="text-xs text-slate-500">Part Model</Label>
+                        <Input
+                          placeholder="Enter model number"
+                          {...register(`items.${index}.part_model`)}
+                        />
+                      </div>
+                      <div className="sm:col-span-6 pt-2 border-t border-dashed">
+                        <Label className="text-xs text-slate-500">Serial Number</Label>
+                        <Input
+                          placeholder="Enter serial number"
+                          {...register(`items.${index}.part_serial`)}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             );
           })}
