@@ -105,19 +105,22 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
           
           {/* Modal Header - Hidden on Print */}
           <div 
-            className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-6 py-4"
+            className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-3 py-3 sm:px-6 sm:py-4"
             data-print-hide="true"
           >
-            <div>
-              <h2 className="text-lg font-semibold">Invoice {invoice.invoice_number}</h2>
-              <p className="text-sm text-slate-500">{formatDate(invoice.created_at)}</p>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base sm:text-lg font-semibold truncate">Invoice {invoice.invoice_number}</h2>
+              <p className="text-xs sm:text-sm text-slate-500">{formatDate(invoice.created_at)}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={handlePrint} variant="outline" size="sm">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              <Button onClick={handlePrint} variant="outline" size="sm" className="hidden sm:flex">
                 <Printer className="mr-2 h-4 w-4" />
                 Print
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
+              <Button onClick={handlePrint} variant="outline" size="icon" className="sm:hidden h-8 w-8">
+                <Printer className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="h-8 w-8 sm:h-9 sm:w-9">
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -125,7 +128,7 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
 
           {/* Invoice Content */}
           <div
-            className="p-6 print:p-0"
+            className="p-4 sm:p-6 print:p-0"
             style={
               {
                 "--invoice-primary": settings.primary_color,
@@ -134,7 +137,7 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
             }
           >
             {/* Invoice Header */}
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div>
                 {settings.show_logo && settings.logo_url ? (
                   <Image
@@ -158,11 +161,11 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
                   </p>
                 )}
               </div>
-              <div className="text-right">
-                <p className="text-xl font-bold" style={{ color: settings.primary_color }}>
+              <div className="sm:text-right">
+                <p className="text-lg sm:text-xl font-bold" style={{ color: settings.primary_color }}>
                   INVOICE
                 </p>
-                <p className="font-mono text-lg">{invoice.invoice_number}</p>
+                <p className="font-mono text-base sm:text-lg">{invoice.invoice_number}</p>
                 <Badge variant="default" className="mt-2">
                   PAID
                 </Badge>

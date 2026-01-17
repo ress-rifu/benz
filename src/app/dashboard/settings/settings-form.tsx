@@ -340,7 +340,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       </Card>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save Settings
         </Button>

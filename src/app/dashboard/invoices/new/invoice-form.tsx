@@ -265,13 +265,14 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
       {/* Invoice Items */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <CardTitle className="text-lg">Invoice Items</CardTitle>
             <div className="flex gap-2">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
+                className="flex-1 sm:flex-none"
                 onClick={() =>
                   append({
                     type: "service",
@@ -288,6 +289,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                 type="button"
                 variant="outline"
                 size="sm"
+                className="flex-1 sm:flex-none"
                 onClick={() =>
                   append({
                     type: "part",
@@ -314,9 +316,107 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
             return (
               <div
                 key={field.id}
-                className="rounded-lg border p-4 space-y-4"
+                className="rounded-lg border p-3 sm:p-4 space-y-4"
               >
-                <div className="grid gap-4 sm:grid-cols-12">
+                {/* Mobile Layout */}
+                <div className="flex flex-col gap-3 sm:hidden">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Label className="text-xs">Type</Label>
+                      <Select
+                        value={itemType}
+                        onValueChange={(value: "part" | "service") => {
+                          setValue(`items.${index}.type`, value);
+                          if (value === "service") {
+                            setValue(`items.${index}.quantity`, 1);
+                            setValue(`items.${index}.part_model`, "");
+                            setValue(`items.${index}.part_serial`, "");
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="service">Service</SelectItem>
+                          <SelectItem value="part">Part</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {fields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 mt-5"
+                        onClick={() => remove(index)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label className="text-xs">Description</Label>
+                    {itemType === "part" ? (
+                      <Select onValueChange={(value) => handlePartSelect(index, value)}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Select a part" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {parts.map((part) => (
+                            <SelectItem key={part.id} value={part.id}>
+                              {part.name} ({part.quantity})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Select onValueChange={(value) => handleServiceSelect(index, value)}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Select a service" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {services.map((service) => (
+                            <SelectItem key={service.id} value={service.id}>
+                              {service.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {itemType === "part" && (
+                      <div>
+                        <Label className="text-xs">Qty</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          className="h-9"
+                          {...register(`items.${index}.quantity`, { valueAsNumber: true })}
+                        />
+                      </div>
+                    )}
+                    <div className={itemType === "part" ? "" : "col-span-2"}>
+                      <Label className="text-xs">Price</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        className="h-9"
+                        {...register(`items.${index}.unit_price`, { valueAsNumber: true })}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-slate-400">Total</Label>
+                      <p className="text-sm font-medium mt-1.5">{formatCurrency(lineTotal)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop Layout */}
+                <div className="hidden sm:grid gap-4 sm:grid-cols-12">
                   <div className="sm:col-span-2">
                     <Label>Type</Label>
                     <Select
@@ -520,15 +620,16 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
         </Card>
       </div>
 
-      <div className="flex justify-end gap-4">
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
         <Button
           type="button"
           variant="outline"
+          className="w-full sm:w-auto"
           onClick={() => router.push("/dashboard/invoices")}
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Invoice
         </Button>

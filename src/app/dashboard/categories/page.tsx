@@ -29,10 +29,10 @@ export default async function CategoriesPage() {
             <CategoriesHeader isSuperAdmin={isSuperAdmin} categories={categories} />
 
             <Tabs defaultValue="services" className="space-y-4">
-                <TabsList>
-                    <TabsTrigger value="services">Service Categories</TabsTrigger>
-                    <TabsTrigger value="parts">Part Categories</TabsTrigger>
-                    <TabsTrigger value="brands">Part Brands</TabsTrigger>
+                <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:inline-flex h-auto">
+                    <TabsTrigger value="services" className="text-xs sm:text-sm py-2">Services</TabsTrigger>
+                    <TabsTrigger value="parts" className="text-xs sm:text-sm py-2">Parts</TabsTrigger>
+                    <TabsTrigger value="brands" className="text-xs sm:text-sm py-2">Brands</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="services">

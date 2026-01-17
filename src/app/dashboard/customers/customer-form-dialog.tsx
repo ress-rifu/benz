@@ -159,15 +159,16 @@ export function CustomerFormDialog({
                         <Textarea id="notes" {...register("notes")} placeholder="Internal notes about this customer..." />
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
                         <Button
                             type="button"
                             variant="outline"
+                            className="w-full sm:w-auto"
                             onClick={() => onOpenChange(false)}
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isPending}>
+                        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {isEditing ? "Update" : "Create"}
                         </Button>
