@@ -1,0 +1,349 @@
+---
+alwaysApply: true
+---
+# Product Requirements Document (PRD)  
+## Benz Automobile – Invoice, Inventory & Revenue Dashboard System
+
+**Version:** 1.1  
+**Status:** Approved  
+**Primary Audience:** Cursor AI, Developers, System Architects  
+**Application Type:** Internal Web Application  
+**Business Name:** Benz Automobile  
+
+---
+
+## 1. Overview
+
+### 1.1 Purpose
+This document defines the functional, non-functional, and technical requirements for a **high-performance internal web application** for **Benz Automobile** that manages:
+- Invoice creation and printing
+- Inventory management (services and spare parts)
+- Revenue visibility through a dashboard
+
+This PRD serves as the **single source of truth** for Cursor during development, refactoring, and optimization.
+
+---
+
+### 1.2 Product Vision
+Build a **blazing-fast, secure, and reliable** internal system that:
+- Has **no public landing page**
+- Starts directly with **authentication**
+- Redirects users to a **dashboard after login**
+- Gives the owner real-time **revenue visibility**
+- Prevents inventory mismatches
+- Generates professional, customizable invoices
+
+---
+
+## 2. Application Flow (Critical)
+
+### 2.1 Routing Rules
+- ❌ No landing page
+- ✅ Initial route: `/login`
+- ✅ Post-login redirect: `/dashboard`
+- ❌ No public routes except authentication
+
+**Flow:**
+/login → /dashboard → internal modules
+
+
+---
+
+## 3. Goals & Objectives
+
+### 3.1 Business Goals
+- Reduce invoice processing time
+- Ensure accurate stock tracking
+- Provide clear revenue visibility
+- Support multi-admin garage operations
+
+### 3.2 Technical Goals
+- Server-first rendering
+- Redis-backed caching
+- Minimal client-side JavaScript
+- Sub-second dashboard load time
+
+---
+
+## 4. Target Users & Roles
+
+### 4.1 User Roles
+
+#### Super Admin (Owner)
+- Full system access
+- View **revenue dashboard**
+- Manage admins
+- Manage inventory
+- Manage invoices
+- Customize invoice templates
+- Access system settings
+
+#### Admin
+- Create and manage invoices
+- Manage inventory
+- ❌ No access to revenue analytics
+- ❌ No user or system-level management
+
+---
+
+## 5. Functional Requirements
+
+## 5.1 Authentication & Authorization
+- Email/password authentication (Supabase Auth)
+- Role-based access control
+- Authorization enforced at:
+  - Database layer (Row Level Security)
+  - Application layer (middleware, server actions)
+
+---
+
+## 5.2 Dashboard (Revenue & Business Overview)
+
+### 5.2.1 Access Control
+- Dashboard is the **first screen after login**
+- Revenue metrics visible to **Super Admin only**
+- Admin users see operational dashboard (no revenue)
+
+---
+
+### 5.2.2 Revenue Metrics
+Dashboard must display:
+- Total revenue (lifetime)
+- Revenue today
+- Revenue this month
+- Revenue this year
+- Number of finalized invoices (per period)
+
+**Rules:**
+- Revenue is calculated **only from finalized invoices**
+- Draft invoices must not affect revenue
+
+---
+
+### 5.2.3 Performance
+- Revenue data cached using Redis
+- Cache invalidation on:
+  - Invoice creation
+  - Invoice update
+- Skeleton loaders shown while loading data
+
+---
+
+## 5.3 Inventory Management
+
+### 5.3.1 Inventory Items
+Each inventory item must include:
+- Name
+- SKU / part number
+- Quantity
+- Cost price
+- Selling price
+- Created at
+- Updated at
+
+---
+
+### 5.3.2 Inventory Actions
+- Add inventory item
+- Update inventory item
+- Remove inventory quantity (**reason required**)
+- View current stock levels
+
+---
+
+### 5.3.3 Inventory Logs
+- All inventory changes must be logged
+- Logs are immutable
+
+Each log must include:
+- Item ID
+- Action type (add, deduct, adjust)
+- Quantity change
+- Reason
+- User ID
+- Timestamp
+
+---
+
+## 5.4 Invoice Management
+
+### 5.4.1 Invoice Creation
+Each invoice must include:
+- Customer details
+- Vehicle details
+- Services (labor)
+- Parts (linked to inventory)
+- Tax
+- Discount
+- Subtotal
+- Grand total
+
+---
+
+### 5.4.2 Inventory Deduction
+- Inventory is deducted **only after successful invoice creation**
+- Deduction must be **transaction-safe**
+- Invoice creation must fail if stock is insufficient
+
+---
+
+### 5.4.3 Invoice Lifecycle
+- Draft
+- Finalized
+- Printed / Exported
+
+Only **finalized invoices** contribute to revenue.
+
+---
+
+## 5.5 Invoice Customization
+
+### 5.5.1 Customization Options (Super Admin only)
+- Logo upload
+- Header text
+- Footer text
+- Theme colors
+- Field visibility toggles
+
+### 5.5.2 Rules
+- Customizations stored in database
+- Cached using Redis
+- Applied dynamically to all invoices
+
+---
+
+## 5.6 Printing & Export
+- Print-optimized layout
+- Browser-native printing
+- PDF export
+- Zero layout shift during print
+
+---
+
+## 6. Performance Requirements
+
+### 6.1 Redis Usage
+Redis must cache:
+- Inventory reads
+- Invoice settings
+- Revenue metrics
+- Dashboard summaries
+
+**Cache Invalidation Rules:**
+- Inventory updates → inventory cache
+- Invoice updates → revenue & invoice cache
+- Settings updates → settings cache
+
+---
+
+### 6.2 UI Responsiveness
+- Skeleton loaders for:
+  - Dashboard
+  - Tables
+  - Forms
+- Optimistic UI updates where safe
+
+---
+
+## 7. UI & UX Requirements
+
+### 7.1 Design System
+- shadcn/ui components only
+- Tailwind CSS
+- Responsive for desktop and tablet
+- Print-safe styling
+
+---
+
+## 8. Technical Requirements
+
+### 8.1 Frontend
+- Next.js (latest)
+- App Router
+- TypeScript
+- Server Components by default
+- Client Components only when required
+
+---
+
+### 8.2 Backend
+- Supabase:
+  - PostgreSQL
+  - Authentication
+  - Storage
+  - Row Level Security
+
+---
+
+### 8.3 Database Tables
+Required tables:
+- users
+- inventory_items
+- inventory_logs
+- invoices
+- invoice_items
+- invoice_settings
+
+**Notes:**
+- Revenue is derived from invoices
+- No redundant revenue storage
+
+---
+
+## 9. Security Requirements
+- Strict RLS enforcement
+- Role-based dashboard access
+- No public data exposure
+- Redis-based rate limiting for sensitive operations
+
+---
+
+## 10. Error Handling
+- Clear validation messages
+- Transaction rollback on failure
+- No silent errors
+- User-safe error responses
+
+---
+
+## 11. Non-Functional Requirements
+- Production-ready code only
+- Scalable architecture
+- Maintainable folder structure
+- Clear separation of concerns
+
+---
+
+## 12. Out of Scope (v1)
+- Public landing page
+- Online payments
+- Customer login portal
+- Mobile application
+
+---
+
+## 13. Success Metrics
+- Accurate real-time revenue
+- Zero inventory mismatch
+- Dashboard load time < 1s (cached)
+- No unauthorized revenue access
+
+---
+
+## 14. Cursor Usage Rules
+- Treat this PRD as **ground truth**
+- Do not introduce undocumented features
+- Follow role restrictions strictly
+- Prioritize performance and correctness
+
+---
+
+## 15. Future Enhancements
+- Revenue charts and trends
+- Exportable financial reports
+- Multi-branch support
+- Advanced tax analytics
+
+---
+
+**End of Document**
