@@ -10,8 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { AuthUser } from "@/lib/auth/get-user";
-import { LogOut, Menu } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { logout } from "./actions";
+import { MobileSidebar } from "./mobile-sidebar";
+import Link from "next/link";
 
 interface HeaderProps {
   user: AuthUser;
@@ -19,13 +21,28 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   return (
-    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6 print:hidden">
-      <Button variant="ghost" size="icon" className="lg:hidden">
-        <Menu className="h-5 w-5" />
-      </Button>
+    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6 print:hidden">
+      {/* Left side - Mobile menu button */}
+      <div className="flex items-center gap-3 lg:hidden">
+        <MobileSidebar user={user} />
+      </div>
 
-      <div className="flex-1" />
+      {/* Center - Logo (mobile only) */}
+      <Link 
+        href="/dashboard" 
+        className="flex items-center gap-2 lg:hidden absolute left-1/2 transform -translate-x-1/2"
+      >
+        <img
+          src="/logo.webp"
+          alt="Benz Automobile"
+          className="h-8 w-8 rounded-lg object-contain"
+        />
+      </Link>
 
+      {/* Spacer for desktop */}
+      <div className="hidden lg:block flex-1" />
+
+      {/* Right side - User menu */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
