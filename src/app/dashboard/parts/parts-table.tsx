@@ -26,52 +26,105 @@ export async function PartsTable() {
     }
 
     return (
-        <div className="rounded-lg border bg-white">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>SKU / Part #</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Brand</TableHead>
-                        <TableHead className="text-right">Stock</TableHead>
-                        <TableHead className="text-right">Price (৳)</TableHead>
-                        <TableHead className="w-[100px]">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {parts.map((part: any) => {
-                        const isLowStock = part.quantity < (part.min_stock_level || 5);
+        <>
+            {/* Desktop Table */}
+            <div className="hidden lg:block rounded-lg border bg-white overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>SKU / Part #</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Brand</TableHead>
+                            <TableHead className="text-right">Stock</TableHead>
+                            <TableHead className="text-right">Price (৳)</TableHead>
+                            <TableHead className="w-[100px]">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {parts.map((part: any) => {
+                            const isLowStock = part.quantity < (part.min_stock_level || 5);
 
-                        return (
-                            <TableRow key={part.id}>
-                                <TableCell>
-                                    <div>
-                                        <span className="font-medium">{part.name}</span>
-                                        {part.name_bn && (
-                                            <span className="ml-2 text-sm text-slate-500">
-                                                ({part.name_bn})
-                                            </span>
+                            return (
+                                <TableRow key={part.id}>
+                                    <TableCell>
+                                        <div>
+                                            <span className="font-medium">{part.name}</span>
+                                            {part.name_bn && (
+                                                <span className="ml-2 text-sm text-slate-500">
+                                                    ({part.name_bn})
+                                                </span>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="font-mono text-sm">
+                                            <div className="text-slate-900">{part.sku}</div>
+                                            {part.part_number && (
+                                                <div className="text-xs text-slate-500">{part.part_number}</div>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary">
+                                            {part.part_categories?.name || "Uncategorized"}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-slate-500">
+                                        {part.part_brands?.name || "-"}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {isLowStock ? (
+                                            <Badge variant="destructive" className="animate-pulse">
+                                                {part.quantity} Low
+                                            </Badge>
+                                        ) : (
+                                            <span className="font-medium">{part.quantity}</span>
                                         )}
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="font-mono text-sm">
-                                        <div className="text-slate-900">{part.sku}</div>
-                                        {part.part_number && (
-                                            <div className="text-xs text-slate-500">{part.part_number}</div>
-                                        )}
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant="secondary">
-                                        {part.part_categories?.name || "Uncategorized"}
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium">
+                                        {formatCurrency(part.selling_price)}
+                                    </TableCell>
+                                    <TableCell>
+                                        <PartActions part={part} />
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden space-y-3">
+                {parts.map((part: any) => {
+                    const isLowStock = part.quantity < (part.min_stock_level || 5);
+
+                    return (
+                        <div key={part.id} className="rounded-lg border bg-white p-4 space-y-3">
+                            <div className="flex items-start justify-between">
+                                <div className="space-y-1 flex-1 min-w-0">
+                                    <p className="font-medium text-slate-900 truncate">{part.name}</p>
+                                    {part.name_bn && (
+                                        <p className="text-sm text-slate-500">{part.name_bn}</p>
+                                    )}
+                                    <p className="font-mono text-xs text-slate-500">{part.sku}</p>
+                                </div>
+                                <PartActions part={part} />
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                <Badge variant="secondary" className="text-xs">
+                                    {part.part_categories?.name || "Uncategorized"}
+                                </Badge>
+                                {part.part_brands?.name && (
+                                    <Badge variant="outline" className="text-xs">
+                                        {part.part_brands.name}
                                     </Badge>
-                                </TableCell>
-                                <TableCell className="text-slate-500">
-                                    {part.part_brands?.name || "-"}
-                                </TableCell>
-                                <TableCell className="text-right">
+                                )}
+                            </div>
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-slate-500">Stock:</span>
                                     {isLowStock ? (
                                         <Badge variant="destructive" className="animate-pulse">
                                             {part.quantity} Low
@@ -79,18 +132,15 @@ export async function PartsTable() {
                                     ) : (
                                         <span className="font-medium">{part.quantity}</span>
                                     )}
-                                </TableCell>
-                                <TableCell className="text-right font-medium">
+                                </div>
+                                <p className="font-semibold text-slate-900">
                                     {formatCurrency(part.selling_price)}
-                                </TableCell>
-                                <TableCell>
-                                    <PartActions part={part} />
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
-                </TableBody>
-            </Table>
-        </div>
+                                </p>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </>
     );
 }

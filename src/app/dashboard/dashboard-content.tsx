@@ -230,7 +230,7 @@ export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) 
       )}
 
       {/* Secondary Metrics - Visible to all */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Customers</CardTitle>
@@ -312,17 +312,17 @@ export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) 
               {summary.recentInvoices.map((invoice) => (
                 <div
                   key={invoice.id}
-                  className="flex items-center justify-between border-b border-slate-100 pb-4 last:border-0 last:pb-0"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4 last:border-0 last:pb-0"
                 >
-                  <div>
-                    <p className="font-medium text-slate-900">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-900 truncate">
                       {invoice.invoice_number}
                     </p>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-slate-500 truncate">
                       {invoice.customer_name}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-left sm:text-right flex sm:flex-col gap-2 sm:gap-0">
                     {isSuperAdmin && (
                       <p className="font-medium text-slate-900">
                         {formatCurrency(invoice.total)}

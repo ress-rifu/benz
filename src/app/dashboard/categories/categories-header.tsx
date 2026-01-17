@@ -20,9 +20,9 @@ export function CategoriesHeader({ isSuperAdmin, categories }: CategoriesHeaderP
 
     return (
         <>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Categories & Brands</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Categories & Brands</h1>
                     <p className="text-sm text-slate-500">
                         {isSuperAdmin 
                             ? "Manage service categories, part categories, and brands" 
@@ -30,16 +30,16 @@ export function CategoriesHeader({ isSuperAdmin, categories }: CategoriesHeaderP
                     </p>
                 </div>
                 {isSuperAdmin && (
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => setBrandDialogOpen(true)}>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <Button variant="outline" onClick={() => setBrandDialogOpen(true)} className="w-full sm:w-auto">
                             <Plus className="mr-2 h-4 w-4" />
                             Add Brand
                         </Button>
-                        <Button variant="outline" onClick={() => setPartDialogOpen(true)}>
+                        <Button variant="outline" onClick={() => setPartDialogOpen(true)} className="w-full sm:w-auto">
                             <Plus className="mr-2 h-4 w-4" />
                             Add Part Category
                         </Button>
-                        <Button onClick={() => setServiceDialogOpen(true)}>
+                        <Button onClick={() => setServiceDialogOpen(true)} className="w-full sm:w-auto">
                             <Plus className="mr-2 h-4 w-4" />
                             Add Service Category
                         </Button>

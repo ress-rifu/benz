@@ -39,55 +39,92 @@ export async function AdminsTable() {
   }
 
   return (
-    <div className="rounded-lg border bg-white">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Username</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {admins.map((admin) => (
-            <TableRow key={admin.id}>
-              <TableCell className="font-medium">
-                {admin.name}
-                {currentUser?.id === admin.id && (
-                  <Badge variant="outline" className="ml-2">
-                    You
-                  </Badge>
-                )}
-              </TableCell>
-              <TableCell className="text-slate-500">
-                @{admin.username}
-              </TableCell>
-              <TableCell className="text-slate-500">
-                {admin.email}
-              </TableCell>
-              <TableCell>
-                <Badge
-                  variant={admin.role === "super_admin" ? "default" : "secondary"}
-                  className="capitalize"
-                >
-                  {admin.role.replace("_", " ")}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-slate-500">
-                {formatDate(admin.created_at)}
-              </TableCell>
-              <TableCell>
-                {currentUser?.id !== admin.id && (
-                  <AdminActions admin={admin} />
-                )}
-              </TableCell>
+    <>
+      {/* Desktop Table */}
+      <div className="hidden md:block rounded-lg border bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Username</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {admins.map((admin) => (
+              <TableRow key={admin.id}>
+                <TableCell className="font-medium">
+                  {admin.name}
+                  {currentUser?.id === admin.id && (
+                    <Badge variant="outline" className="ml-2">
+                      You
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell className="text-slate-500">
+                  @{admin.username}
+                </TableCell>
+                <TableCell className="text-slate-500">
+                  {admin.email}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={admin.role === "super_admin" ? "default" : "secondary"}
+                    className="capitalize"
+                  >
+                    {admin.role.replace("_", " ")}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-slate-500">
+                  {formatDate(admin.created_at)}
+                </TableCell>
+                <TableCell>
+                  {currentUser?.id !== admin.id && (
+                    <AdminActions admin={admin} />
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {admins.map((admin) => (
+          <div key={admin.id} className="rounded-lg border bg-white p-4 space-y-3">
+            <div className="flex items-start justify-between">
+              <div className="space-y-1 flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-slate-900">{admin.name}</p>
+                  {currentUser?.id === admin.id && (
+                    <Badge variant="outline" className="text-xs">You</Badge>
+                  )}
+                </div>
+                <p className="text-sm text-slate-500">@{admin.username}</p>
+                <p className="text-sm text-slate-500 truncate">{admin.email}</p>
+              </div>
+              {currentUser?.id !== admin.id && (
+                <AdminActions admin={admin} />
+              )}
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <Badge
+                variant={admin.role === "super_admin" ? "default" : "secondary"}
+                className="capitalize"
+              >
+                {admin.role.replace("_", " ")}
+              </Badge>
+              <span className="text-xs text-slate-500">
+                {formatDate(admin.created_at)}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
