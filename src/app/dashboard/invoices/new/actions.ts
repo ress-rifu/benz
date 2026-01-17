@@ -54,23 +54,23 @@ export async function createInvoice(input: InvoiceInput) {
 
     if (partItems.length > 0) {
       const partIds = partItems.map((p) => p.inventory_item_id!);
-      const { data: inventoryData } = await supabase
-        .from("inventory_items")
+      const { data: partsData } = await supabase
+        .from("parts")
         .select("id, name, quantity")
         .in("id", partIds);
 
       for (const partItem of partItems) {
-        const inventory = inventoryData?.find(
-          (inv) => inv.id === partItem.inventory_item_id
+        const part = partsData?.find(
+          (p) => p.id === partItem.inventory_item_id
         );
 
-        if (!inventory) {
+        if (!part) {
           return { error: `Part not found: ${partItem.description}` };
         }
 
-        if (inventory.quantity < partItem.quantity) {
+        if (part.quantity < partItem.quantity) {
           return {
-            error: `Insufficient stock for ${inventory.name}. Available: ${inventory.quantity}, Requested: ${partItem.quantity}`,
+            error: `Insufficient stock for ${part.name}. Available: ${part.quantity}, Requested: ${partItem.quantity}`,
           };
         }
       }
@@ -142,25 +142,25 @@ export async function createInvoice(input: InvoiceInput) {
 
     // Deduct inventory for parts (transaction-safe)
     for (const partItem of partItems) {
-      // Get current quantity
-      const { data: currentInventory } = await supabase
-        .from("inventory_items")
+      // Get current quantity from parts table
+      const { data: currentPart } = await supabase
+        .from("parts")
         .select("quantity")
         .eq("id", partItem.inventory_item_id!)
         .single();
 
-      if (!currentInventory) continue;
+      if (!currentPart) continue;
 
-      const newQuantity = currentInventory.quantity - partItem.quantity;
+      const newQuantity = currentPart.quantity - partItem.quantity;
 
-      // Update inventory
+      // Update parts quantity
       const { error: updateError } = await supabase
-        .from("inventory_items")
+        .from("parts")
         .update({ quantity: newQuantity })
         .eq("id", partItem.inventory_item_id!);
 
       if (updateError) {
-        console.error("Failed to update inventory:", updateError);
+        console.error("Failed to update part quantity:", updateError);
         continue;
       }
 
@@ -169,7 +169,7 @@ export async function createInvoice(input: InvoiceInput) {
         inventory_item_id: partItem.inventory_item_id!,
         action: "invoice_deduct",
         quantity_change: -partItem.quantity,
-        previous_quantity: currentInventory.quantity,
+        previous_quantity: currentPart.quantity,
         new_quantity: newQuantity,
         reason: `Deducted for invoice ${invoiceNumber}`,
         user_id: user.id,
