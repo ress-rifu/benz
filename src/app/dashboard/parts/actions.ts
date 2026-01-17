@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { requireSuperAdmin } from "@/lib/auth/get-user";
+import { requireAdmin } from "@/lib/auth/get-user";
 import { revalidatePath } from "next/cache";
 import { invalidateCache } from "@/lib/redis/cache";
 import { CACHE_KEYS } from "@/lib/redis/client";
@@ -55,7 +55,7 @@ export async function getPartsWithRelations() {
 
 export async function createPart(input: PartInput) {
     try {
-        await requireSuperAdmin();
+        await requireAdmin();
         const parsed = partSchema.safeParse(input);
 
         if (!parsed.success) {
@@ -94,7 +94,7 @@ export async function createPart(input: PartInput) {
 
 export async function updatePart(id: string, input: PartInput) {
     try {
-        await requireSuperAdmin();
+        await requireAdmin();
         const parsed = partSchema.safeParse(input);
 
         if (!parsed.success) {
@@ -149,7 +149,7 @@ export async function updatePart(id: string, input: PartInput) {
 
 export async function adjustPartStock(input: PartStockAdjustmentInput) {
     try {
-        await requireSuperAdmin();
+        await requireAdmin();
         const parsed = partStockAdjustmentSchema.safeParse(input);
 
         if (!parsed.success) {
@@ -210,7 +210,7 @@ export async function adjustPartStock(input: PartStockAdjustmentInput) {
 
 export async function deactivatePart(id: string) {
     try {
-        await requireSuperAdmin();
+        await requireAdmin();
         const supabase = await createClient();
 
         const { error } = await supabase
@@ -234,7 +234,7 @@ export async function deactivatePart(id: string) {
 
 export async function reactivatePart(id: string) {
     try {
-        await requireSuperAdmin();
+        await requireAdmin();
         const supabase = await createClient();
 
         const { error } = await supabase

@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { requireSuperAdmin } from "@/lib/auth/get-user";
+import { requireAdmin } from "@/lib/auth/get-user";
 import { revalidatePath } from "next/cache";
 import { invalidateCache } from "@/lib/redis/cache";
 import { CACHE_KEYS } from "@/lib/redis/client";
@@ -38,7 +38,7 @@ export async function getServicesWithCategories() {
 
 export async function createService(input: ServiceInput) {
     try {
-        await requireSuperAdmin();
+        await requireAdmin();
         const parsed = serviceSchema.safeParse(input);
 
         if (!parsed.success) {
@@ -66,7 +66,7 @@ export async function createService(input: ServiceInput) {
 
 export async function updateService(id: string, input: ServiceInput) {
     try {
-        await requireSuperAdmin();
+        await requireAdmin();
         const parsed = serviceSchema.safeParse(input);
 
         if (!parsed.success) {
@@ -96,7 +96,7 @@ export async function updateService(id: string, input: ServiceInput) {
 
 export async function deactivateService(id: string) {
     try {
-        await requireSuperAdmin();
+        await requireAdmin();
         const supabase = await createClient();
 
         const { error } = await supabase
@@ -120,7 +120,7 @@ export async function deactivateService(id: string) {
 
 export async function reactivateService(id: string) {
     try {
-        await requireSuperAdmin();
+        await requireAdmin();
         const supabase = await createClient();
 
         const { error } = await supabase
