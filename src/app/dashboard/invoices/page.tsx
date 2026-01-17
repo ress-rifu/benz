@@ -7,11 +7,11 @@ import { getUser } from "@/lib/auth/get-user";
 import { redirect } from "next/navigation";
 
 interface PageProps {
-  searchParams: Promise<{ q?: string; status?: string }>;
+  searchParams: Promise<{ q?: string }>;
 }
 
 export default async function InvoicesPage({ searchParams }: PageProps) {
-  const [{ q, status }, user] = await Promise.all([
+  const [{ q }, user] = await Promise.all([
     searchParams,
     getUser(),
   ]);
@@ -26,10 +26,9 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
     <div className="space-y-6">
       <InvoicesHeader />
       <InvoicesSearch />
-      <Suspense key={`${q}-${status}`} fallback={<TableSkeleton columns={6} rows={10} />}>
-        <InvoicesTable searchQuery={q} statusFilter={status} isSuperAdmin={isSuperAdmin} />
+      <Suspense key={q || "all"} fallback={<TableSkeleton columns={5} rows={10} />}>
+        <InvoicesTable searchQuery={q} isSuperAdmin={isSuperAdmin} />
       </Suspense>
     </div>
   );
 }
-

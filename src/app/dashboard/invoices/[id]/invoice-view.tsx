@@ -8,7 +8,6 @@ import type { Tables } from "@/types/database";
 import { ArrowLeft, Printer } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { InvoiceActions } from "./invoice-actions";
 
 interface InvoiceSettings {
   logo_url: string | null;
@@ -34,13 +33,6 @@ interface InvoiceViewProps {
   billedByName: string | null;
 }
 
-const statusColors = {
-  draft: "secondary",
-  pending: "outline",
-  paid: "default",
-  cancelled: "destructive",
-} as const;
-
 export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByName }: InvoiceViewProps) {
   const handlePrint = () => {
     window.print();
@@ -64,7 +56,6 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <InvoiceActions invoice={invoice} />
           <Button onClick={handlePrint} variant="outline">
             <Printer className="mr-2 h-4 w-4" />
             Print
@@ -112,8 +103,8 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
               INVOICE
             </p>
             <p className="font-mono text-lg">{invoice.invoice_number}</p>
-            <Badge variant={statusColors[invoice.status]} className="mt-2">
-              {invoice.status.toUpperCase()}
+            <Badge variant="default" className="mt-2">
+              PAID
             </Badge>
           </div>
         </div>
@@ -281,4 +272,3 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
     </div>
   );
 }
-

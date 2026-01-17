@@ -1,13 +1,6 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useTransition } from "react";
@@ -19,15 +12,14 @@ export function InvoicesSearch() {
   const [isPending, startTransition] = useTransition();
 
   const q = searchParams.get("q") || "";
-  const status = searchParams.get("status") || "";
 
   const updateSearchParams = useCallback(
-    (key: string, value: string) => {
+    (value: string) => {
       const params = new URLSearchParams(searchParams.toString());
       if (value) {
-        params.set(key, value);
+        params.set("q", value);
       } else {
-        params.delete(key);
+        params.delete("q");
       }
       startTransition(() => {
         router.push(`/dashboard/invoices?${params.toString()}`);
@@ -42,8 +34,6 @@ export function InvoicesSearch() {
     });
   };
 
-  const hasFilters = q || status;
-
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
       <div className="relative flex-1">
@@ -51,7 +41,7 @@ export function InvoicesSearch() {
         <Input
           placeholder="Search by invoice #, customer, or vehicle..."
           defaultValue={q}
-          onChange={(e) => updateSearchParams("q", e.target.value)}
+          onChange={(e) => updateSearchParams(e.target.value)}
           className="pl-10"
         />
         {isPending && (
@@ -60,22 +50,7 @@ export function InvoicesSearch() {
           </div>
         )}
       </div>
-      <Select
-        value={status}
-        onValueChange={(value) => updateSearchParams("status", value === "all" ? "" : value)}
-      >
-        <SelectTrigger className="w-full sm:w-[180px]">
-          <SelectValue placeholder="All statuses" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All statuses</SelectItem>
-          <SelectItem value="draft">Draft</SelectItem>
-          <SelectItem value="pending">Pending</SelectItem>
-          <SelectItem value="paid">Paid</SelectItem>
-          <SelectItem value="cancelled">Cancelled</SelectItem>
-        </SelectContent>
-      </Select>
-      {hasFilters && (
+      {q && (
         <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-2">
           <X className="h-4 w-4" />
           Clear

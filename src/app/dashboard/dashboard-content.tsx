@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { getOrSet } from "@/lib/redis/cache";
 import { CACHE_KEYS, CACHE_TTL } from "@/lib/redis/client";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   Package,
   FileText,
@@ -13,7 +13,7 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
-import { RevenueBarChart, StatusPieChart } from "./components/revenue-charts";
+import { RevenueBarChart } from "./components/revenue-charts";
 
 interface DashboardContentProps {
   isSuperAdmin: boolean;
@@ -36,12 +36,9 @@ interface DashboardSummary {
     invoice_number: string;
     customer_name: string;
     total: number;
-    status: string;
     created_at: string;
   }[];
   weeklyRevenueData: { date: string; revenue: number; invoices: number }[];
-  monthlyRevenueData: { date: string; revenue: number; invoices: number }[];
-  invoiceStatusBreakdown: { name: string; value: number; color: string }[];
 }
 
 async function getDashboardSummary(): Promise<DashboardSummary> {
@@ -71,29 +68,27 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
         servicesResult,
         partsResult,
         recentResult,
-        statusBreakdownResult,
         dailyRevenueResult,
       ] = await Promise.all([
         supabase.from("inventory_items").select("*", { count: "exact", head: true }),
         supabase.from("inventory_items").select("*", { count: "exact", head: true }).lt("quantity", 10),
         supabase.from("invoices").select("*", { count: "exact", head: true }),
-        supabase.from("invoices").select("total").eq("status", "paid"),
-        supabase.from("invoices").select("total").eq("status", "paid").gte("created_at", startOfWeek.toISOString()),
-        supabase.from("invoices").select("total").eq("status", "paid").gte("created_at", startOfMonth.toISOString()),
-        supabase.from("invoices").select("total").eq("status", "paid")
+        // All invoices count as revenue (no status filter - invoices are created when paid)
+        supabase.from("invoices").select("total"),
+        supabase.from("invoices").select("total").gte("created_at", startOfWeek.toISOString()),
+        supabase.from("invoices").select("total").gte("created_at", startOfMonth.toISOString()),
+        supabase.from("invoices").select("total")
           .gte("created_at", startOfPrevMonth.toISOString())
           .lte("created_at", endOfPrevMonth.toISOString()),
         supabase.from("customers").select("*", { count: "exact", head: true }),
         supabase.from("services").select("*", { count: "exact", head: true }),
         supabase.from("parts").select("*", { count: "exact", head: true }),
         supabase.from("invoices")
-          .select("id, invoice_number, customer_name, total, status, created_at")
+          .select("id, invoice_number, customer_name, total, created_at")
           .order("created_at", { ascending: false })
           .limit(5),
-        supabase.from("invoices").select("status"),
         supabase.from("invoices")
-          .select("total, created_at, status")
-          .eq("status", "paid")
+          .select("total, created_at")
           .gte("created_at", startOfWeek.toISOString())
           .order("created_at", { ascending: true }),
       ]);
@@ -131,34 +126,6 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
         invoices: data.invoices,
       }));
 
-      // Monthly data (last 6 months)
-      const monthlyData: { date: string; revenue: number; invoices: number }[] = [];
-      for (let i = 5; i >= 0; i--) {
-        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthName = monthStart.toLocaleDateString("en-US", { month: "short" });
-        monthlyData.push({ date: monthName, revenue: 0, invoices: 0 });
-      }
-
-      // Invoice status breakdown
-      const statusCounts: { [key: string]: number } = {
-        paid: 0,
-        pending: 0,
-        draft: 0,
-        cancelled: 0,
-      };
-      statusBreakdownResult.data?.forEach((inv) => {
-        if (statusCounts[inv.status] !== undefined) {
-          statusCounts[inv.status]++;
-        }
-      });
-
-      const invoiceStatusBreakdown = [
-        { name: "Paid", value: statusCounts.paid, color: "#10b981" },
-        { name: "Pending", value: statusCounts.pending, color: "#f59e0b" },
-        { name: "Draft", value: statusCounts.draft, color: "#64748b" },
-        { name: "Cancelled", value: statusCounts.cancelled, color: "#ef4444" },
-      ];
-
       return {
         totalInventoryItems: inventoryResult.count || 0,
         lowStockItems: lowStockResult.count || 0,
@@ -173,8 +140,6 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
         revenueGrowth,
         recentInvoices: recentResult.data || [],
         weeklyRevenueData,
-        monthlyRevenueData: monthlyData,
-        invoiceStatusBreakdown,
       };
     },
     CACHE_TTL.SHORT
@@ -243,7 +208,7 @@ export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) 
               <div className="text-2xl font-bold text-amber-800">
                 {formatCurrency(summary.totalRevenue)}
               </div>
-              <p className="text-xs text-amber-600">All time (paid invoices)</p>
+              <p className="text-xs text-amber-600">All time</p>
             </CardContent>
           </Card>
 
@@ -258,7 +223,7 @@ export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) 
               <div className="text-2xl font-bold text-purple-800">
                 {summary.totalInvoices}
               </div>
-              <p className="text-xs text-purple-600">All statuses</p>
+              <p className="text-xs text-purple-600">All time</p>
             </CardContent>
           </Card>
         </div>
@@ -318,7 +283,7 @@ export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) 
               <div className="text-2xl font-bold text-purple-800">
                 {summary.totalInvoices}
               </div>
-              <p className="text-xs text-purple-600">All statuses</p>
+              <p className="text-xs text-purple-600">All time</p>
             </CardContent>
           </Card>
         )}
@@ -330,20 +295,6 @@ export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) 
           <RevenueBarChart
             data={summary.weeklyRevenueData}
             title="Revenue (Last 7 Days)"
-          />
-          <StatusPieChart
-            data={summary.invoiceStatusBreakdown}
-            title="Invoice Status Breakdown"
-          />
-        </div>
-      )}
-
-      {/* Invoice Status Chart for regular admins (without revenue) */}
-      {!isSuperAdmin && (
-        <div className="max-w-md">
-          <StatusPieChart
-            data={summary.invoiceStatusBreakdown}
-            title="Invoice Status Breakdown"
           />
         </div>
       )}
@@ -377,18 +328,9 @@ export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) 
                         {formatCurrency(invoice.total)}
                       </p>
                     )}
-                    <div className="flex items-center gap-2">
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${invoice.status === "paid" ? "bg-green-100 text-green-700" :
-                          invoice.status === "pending" ? "bg-amber-100 text-amber-700" :
-                            invoice.status === "cancelled" ? "bg-red-100 text-red-700" :
-                              "bg-slate-100 text-slate-700"
-                        }`}>
-                        {invoice.status}
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        {new Date(invoice.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
+                    <span className="text-xs text-slate-500">
+                      {formatDate(invoice.created_at)}
+                    </span>
                   </div>
                 </div>
               ))}

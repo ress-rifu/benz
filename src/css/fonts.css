@@ -1,0 +1,48 @@
+/**
+ * Font Configuration
+ * 
+ * Google Sans - for English text
+ * Potro Sans Bangla - for Bengali/Bangla text
+ */
+
+/* ========================================
+   GOOGLE SANS FONT FAMILY (English)
+   ======================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
+
+/* ========================================
+   POTRO SANS BANGLA FONT FAMILY (Bengali)
+   ======================================== */
+
+@font-face {
+  font-family: 'Potro Sans Bangla';
+  src: url('./fonts/Potro_Sans/PotroSansBangla-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Potro Sans Bangla';
+  src: url('./fonts/Potro_Sans/PotroSansBangla-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Potro Sans Bangla';
+  src: url('./fonts/Potro_Sans/PotroSansBangla-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Potro Sans Bangla';
+  src: url('./fonts/Potro_Sans/PotroSansBangla-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+  font-style: normal;
+}

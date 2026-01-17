@@ -58,32 +58,19 @@ const config: Config = {
   		},
   		fontFamily: {
   			sans: [
-  				'Author-Variable',
-  				'Author-Regular',
+  				'Google Sans',
+  				'Potro Sans Bangla',
   				'sans-serif'
   			],
   			mono: [
   				'var(--font-geist-mono)'
   			],
-  			author: [
-  				'Author-Variable',
-  				'Author-Regular',
+  			english: [
+  				'Google Sans',
   				'sans-serif'
   			],
-  			'author-light': [
-  				'Author-Light',
-  				'sans-serif'
-  			],
-  			'author-medium': [
-  				'Author-Medium',
-  				'sans-serif'
-  			],
-  			'author-semibold': [
-  				'Author-Semibold',
-  				'sans-serif'
-  			],
-  			'author-bold': [
-  				'Author-Bold',
+  			bangla: [
+  				'Potro Sans Bangla',
   				'sans-serif'
   			]
   		}

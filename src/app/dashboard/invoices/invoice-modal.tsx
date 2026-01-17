@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { Tables, Json } from "@/types/database";
+import type { Tables } from "@/types/database";
 import { Eye, Printer, X } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
@@ -52,13 +52,6 @@ interface InvoiceModalProps {
   items: Tables<"invoice_items">[];
   isSuperAdmin: boolean;
 }
-
-const statusColors = {
-  draft: "secondary",
-  pending: "outline",
-  paid: "default",
-  cancelled: "destructive",
-} as const;
 
 export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps) {
   const [open, setOpen] = useState(false);
@@ -145,8 +138,8 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
                   INVOICE
                 </p>
                 <p className="font-mono text-lg">{invoice.invoice_number}</p>
-                <Badge variant={statusColors[invoice.status]} className="mt-2">
-                  {invoice.status.toUpperCase()}
+                <Badge variant="default" className="mt-2">
+                  PAID
                 </Badge>
               </div>
             </div>

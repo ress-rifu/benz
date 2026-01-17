@@ -4,13 +4,11 @@ import { InvoicesTableClient } from "./invoices-table-client";
 
 interface InvoicesTableProps {
   searchQuery?: string;
-  statusFilter?: string;
   isSuperAdmin: boolean;
 }
 
 async function getInvoicesWithItems(
-  searchQuery?: string,
-  statusFilter?: string
+  searchQuery?: string
 ): Promise<(Tables<"invoices"> & { items: Tables<"invoice_items">[] })[]> {
   const supabase = await createClient();
 
@@ -21,10 +19,6 @@ async function getInvoicesWithItems(
       items:invoice_items(*)
     `)
     .order("created_at", { ascending: false });
-
-  if (statusFilter) {
-    query = query.eq("status", statusFilter);
-  }
 
   if (searchQuery) {
     query = query.or(
@@ -43,11 +37,10 @@ async function getInvoicesWithItems(
 
 export async function InvoicesTable({
   searchQuery,
-  statusFilter,
   isSuperAdmin,
 }: InvoicesTableProps) {
-  const invoices = await getInvoicesWithItems(searchQuery, statusFilter);
-  const hasFilters = !!(searchQuery || statusFilter);
+  const invoices = await getInvoicesWithItems(searchQuery);
+  const hasFilters = !!searchQuery;
 
   return (
     <InvoicesTableClient

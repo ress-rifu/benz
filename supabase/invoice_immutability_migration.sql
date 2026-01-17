@@ -4,7 +4,8 @@
 -- This migration:
 -- 1. Adds settings snapshot columns to invoices (stored at creation time)
 -- 2. Adds billed_by_name column to store creator name permanently
--- 3. Adds trigger to prevent ANY modifications to invoices (except status changes)
+-- 3. Removes status column (invoices are created when paid)
+-- 4. Adds trigger to prevent ANY modifications to invoices
 
 -- ============================================
 -- ADD SETTINGS SNAPSHOT COLUMNS TO INVOICES
@@ -17,8 +18,18 @@ ALTER TABLE invoices ADD COLUMN IF NOT EXISTS settings_snapshot JSONB;
 ALTER TABLE invoices ADD COLUMN IF NOT EXISTS billed_by_name TEXT;
 
 -- ============================================
--- TRIGGER TO MAKE INVOICES IMMUTABLE
--- (Only status can be changed: pending -> paid/cancelled)
+-- REMOVE STATUS COLUMN (invoices are always paid)
+-- ============================================
+
+-- Drop the status column if it exists (invoices are only created when payment is received)
+ALTER TABLE invoices DROP COLUMN IF EXISTS status;
+
+-- Drop the invoice_status enum type if it exists
+DROP TYPE IF EXISTS invoice_status;
+
+-- ============================================
+-- TRIGGER TO MAKE INVOICES COMPLETELY IMMUTABLE
+-- (No changes allowed at all)
 -- ============================================
 
 CREATE OR REPLACE FUNCTION public.enforce_invoice_immutability()
@@ -28,49 +39,9 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-    -- Only allow status changes (and only valid transitions)
-    IF OLD.status = 'paid' OR OLD.status = 'cancelled' THEN
-        RAISE EXCEPTION 'Cannot modify a % invoice', OLD.status;
-    END IF;
-    
-    -- Check if only status is being changed
-    IF NEW.invoice_number IS DISTINCT FROM OLD.invoice_number OR
-       NEW.customer_name IS DISTINCT FROM OLD.customer_name OR
-       NEW.customer_email IS DISTINCT FROM OLD.customer_email OR
-       NEW.customer_phone IS DISTINCT FROM OLD.customer_phone OR
-       NEW.customer_address IS DISTINCT FROM OLD.customer_address OR
-       NEW.vehicle_make IS DISTINCT FROM OLD.vehicle_make OR
-       NEW.vehicle_model IS DISTINCT FROM OLD.vehicle_model OR
-       NEW.vehicle_year IS DISTINCT FROM OLD.vehicle_year OR
-       NEW.vehicle_vin IS DISTINCT FROM OLD.vehicle_vin OR
-       NEW.vehicle_license_plate IS DISTINCT FROM OLD.vehicle_license_plate OR
-       NEW.subtotal IS DISTINCT FROM OLD.subtotal OR
-       NEW.tax_rate IS DISTINCT FROM OLD.tax_rate OR
-       NEW.tax_amount IS DISTINCT FROM OLD.tax_amount OR
-       NEW.discount_amount IS DISTINCT FROM OLD.discount_amount OR
-       NEW.total IS DISTINCT FROM OLD.total OR
-       NEW.notes IS DISTINCT FROM OLD.notes OR
-       NEW.created_by IS DISTINCT FROM OLD.created_by OR
-       NEW.created_at IS DISTINCT FROM OLD.created_at OR
-       NEW.settings_snapshot IS DISTINCT FROM OLD.settings_snapshot OR
-       NEW.billed_by_name IS DISTINCT FROM OLD.billed_by_name THEN
-        RAISE EXCEPTION 'Invoices are immutable. Only status can be changed.';
-    END IF;
-    
-    -- Only allow valid status transitions
-    IF NEW.status IS DISTINCT FROM OLD.status THEN
-        IF OLD.status NOT IN ('draft', 'pending') THEN
-            RAISE EXCEPTION 'Cannot change status of a % invoice', OLD.status;
-        END IF;
-        
-        IF NEW.status NOT IN ('pending', 'paid', 'cancelled') THEN
-            RAISE EXCEPTION 'Invalid status transition to %', NEW.status;
-        END IF;
-    END IF;
-    
-    -- Allow the update (only status change at this point)
-    NEW.updated_at = NOW();
-    RETURN NEW;
+    -- Invoices are completely immutable - no updates allowed
+    RAISE EXCEPTION 'Invoices are completely immutable and cannot be modified.';
+    RETURN NULL;
 END;
 $$;
 
@@ -115,8 +86,9 @@ CREATE TRIGGER prevent_invoice_item_update
 -- INVOICES:
 --   ✓ settings_snapshot - Stores all display settings at creation time
 --   ✓ billed_by_name - Stores creator's name permanently
---   ✓ Only status can be changed (draft/pending -> paid/cancelled)
---   ✓ All other fields are completely immutable
+--   ✓ No status column - invoices are created when payment is received
+--   ✓ Completely immutable - no updates allowed
+--   ✓ Cannot be deleted
 --
 -- INVOICE ITEMS:
 --   ✓ Cannot be modified (UPDATE blocked)

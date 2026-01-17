@@ -8,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { FileX } from "lucide-react";
 import type { Tables } from "@/types/database";
@@ -22,13 +21,6 @@ interface InvoicesTableClientProps {
   hasFilters: boolean;
 }
 
-const statusColors = {
-  draft: "secondary",
-  pending: "outline",
-  paid: "default",
-  cancelled: "destructive",
-} as const;
-
 export function InvoicesTableClient({ invoices, isSuperAdmin, hasFilters }: InvoicesTableClientProps) {
   if (invoices.length === 0) {
     return (
@@ -38,7 +30,7 @@ export function InvoicesTableClient({ invoices, isSuperAdmin, hasFilters }: Invo
             <FileX className="mx-auto h-12 w-12 text-slate-300" />
             <p className="mt-4 text-slate-500">No invoices found</p>
             <p className="mt-1 text-sm text-slate-400">
-              Try adjusting your search or filter criteria
+              Try adjusting your search criteria
             </p>
           </>
         ) : (
@@ -61,7 +53,6 @@ export function InvoicesTableClient({ invoices, isSuperAdmin, hasFilters }: Invo
             <TableHead>Invoice #</TableHead>
             <TableHead>Customer</TableHead>
             <TableHead>Vehicle</TableHead>
-            <TableHead>Status</TableHead>
             {isSuperAdmin && <TableHead className="text-right">Total</TableHead>}
             <TableHead>Date</TableHead>
             <TableHead className="w-[80px]">View</TableHead>
@@ -78,11 +69,6 @@ export function InvoicesTableClient({ invoices, isSuperAdmin, hasFilters }: Invo
               </TableCell>
               <TableCell className="text-slate-500">
                 {invoice.vehicle_make} {invoice.vehicle_model}
-              </TableCell>
-              <TableCell>
-                <Badge variant={statusColors[invoice.status]}>
-                  {invoice.status}
-                </Badge>
               </TableCell>
               {isSuperAdmin && (
                 <TableCell className="text-right font-medium">

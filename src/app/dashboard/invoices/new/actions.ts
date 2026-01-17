@@ -106,7 +106,6 @@ export async function createInvoice(input: InvoiceInput) {
         discount_amount: data.discount_amount,
         total,
         notes: data.notes || null,
-        status: "pending",
         created_by: user.id,
         billed_by_name: user.name || null,
         settings_snapshot: settings,

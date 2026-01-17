@@ -157,7 +157,6 @@ export interface Database {
           discount_amount: number;
           total: number;
           notes: string | null;
-          status: "draft" | "pending" | "paid" | "cancelled";
           created_by: string;
           billed_by_name: string | null;
           settings_snapshot: Json | null;
@@ -182,16 +181,13 @@ export interface Database {
           discount_amount?: number;
           total: number;
           notes?: string | null;
-          status?: "draft" | "pending" | "paid" | "cancelled";
           created_by: string;
           billed_by_name?: string | null;
           settings_snapshot?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
-        Update: {
-          status?: "draft" | "pending" | "paid" | "cancelled";
-        };
+        Update: Record<string, never>;
         Relationships: [
           {
             foreignKeyName: "invoices_created_by_fkey";
@@ -566,7 +562,6 @@ export interface Database {
     Enums: {
       user_role: UserRole;
       inventory_action: "add" | "remove" | "adjust" | "invoice_deduct";
-      invoice_status: "draft" | "pending" | "paid" | "cancelled";
       invoice_item_type: "part" | "service";
     };
     CompositeTypes: {
