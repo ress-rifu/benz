@@ -63,6 +63,16 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
   const billedByName = invoice.billed_by_name || null;
 
   const handlePrint = () => {
+    // Add class to body to enable modal-specific print styles
+    document.body.classList.add('printing-modal');
+    
+    // Handler to remove class after print dialog closes
+    const handleAfterPrint = () => {
+      document.body.classList.remove('printing-modal');
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+    window.addEventListener('afterprint', handleAfterPrint);
+    
     // Wait for all images to load before printing
     const images = document.querySelectorAll('img');
     const imagePromises = Array.from(images).map((img) => {
