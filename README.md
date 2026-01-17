@@ -4,7 +4,7 @@ A production-ready web application for vehicle garage management with customizab
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (App Router, TypeScript, Server Components)
+- **Framework**: Next.js 16 (App Router, TypeScript, Server Components)
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth with RLS
 - **Caching**: Redis
