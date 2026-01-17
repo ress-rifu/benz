@@ -83,7 +83,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
   // Use stored settings snapshot if available, otherwise use defaults
   // This ensures past invoices are displayed exactly as they were created
   const settings: InvoiceSettings = invoiceData.invoice.settings_snapshot
-    ? (invoiceData.invoice.settings_snapshot as InvoiceSettings)
+    ? (invoiceData.invoice.settings_snapshot as unknown as InvoiceSettings)
     : DEFAULT_SETTINGS;
 
   // Use stored billed_by_name for immutability

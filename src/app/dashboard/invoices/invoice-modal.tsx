@@ -57,7 +57,7 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
   const [open, setOpen] = useState(false);
   
   const settings: InvoiceSettings = invoice.settings_snapshot
-    ? (invoice.settings_snapshot as InvoiceSettings)
+    ? (invoice.settings_snapshot as unknown as InvoiceSettings)
     : DEFAULT_SETTINGS;
 
   const billedByName = invoice.billed_by_name || null;

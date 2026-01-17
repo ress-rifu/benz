@@ -111,15 +111,22 @@ export async function deleteAdmin(userId: string) {
     // Use admin client for admin operations (bypasses RLS)
     const supabase = createAdminClient();
 
-    // Transfer invoices created by this user to the current super admin
-    const { error: invoiceTransferError } = await supabase
+    // Check if user has any invoices (invoices are immutable, so we can't transfer them)
+    const { data: userInvoices, error: invoiceCheckError } = await supabase
       .from("invoices")
-      .update({ created_by: currentUser.id })
-      .eq("created_by", userId);
+      .select("id")
+      .eq("created_by", userId)
+      .limit(1);
 
-    if (invoiceTransferError) {
-      console.error("Failed to transfer invoices:", invoiceTransferError);
-      return { error: "Failed to transfer user's invoices" };
+    if (invoiceCheckError) {
+      console.error("Failed to check user invoices:", invoiceCheckError);
+      return { error: "Failed to check user's invoices" };
+    }
+
+    if (userInvoices && userInvoices.length > 0) {
+      return { 
+        error: "Cannot delete this admin because they have created invoices. Invoices are permanent records and cannot be transferred or deleted." 
+      };
     }
 
     // Transfer inventory logs to the current super admin
