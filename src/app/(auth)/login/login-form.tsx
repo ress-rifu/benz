@@ -38,18 +38,18 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-slate-200">
-          Email
+        <Label htmlFor="identifier" className="text-slate-200">
+          Email or Username
         </Label>
         <Input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
+          id="identifier"
+          type="text"
+          placeholder="you@example.com or username"
           className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-amber-400/50 focus:ring-amber-400/20"
-          {...register("email")}
+          {...register("identifier")}
         />
-        {errors.email && (
-          <p className="text-sm text-red-400">{errors.email.message}</p>
+        {errors.identifier && (
+          <p className="text-sm text-red-400">{errors.identifier.message}</p>
         )}
       </div>
 

@@ -1,14 +1,11 @@
 import { Suspense } from "react";
 import { FormSkeleton } from "@/components/skeletons/form-skeleton";
 import { createClient } from "@/lib/supabase/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { InvoiceView } from "./invoice-view";
-import { getOrSet } from "@/lib/redis/cache";
-import { CACHE_KEYS, CACHE_TTL } from "@/lib/redis/client";
-import type { Tables } from "@/types/database";
+import { getUser } from "@/lib/auth/get-user";
 
 interface InvoiceSettings {
-  id: string;
   logo_url: string | null;
   header_text: string | null;
   footer_text: string | null;
@@ -23,6 +20,22 @@ interface InvoiceSettings {
   show_customer_phone: boolean;
   show_customer_address: boolean;
 }
+
+const DEFAULT_SETTINGS: InvoiceSettings = {
+  logo_url: null,
+  header_text: "Thank you for choosing Benz Automobile for your vehicle service needs.",
+  footer_text: "Payment is due within 30 days. Thank you for your business!",
+  primary_color: "#1f2937",
+  secondary_color: "#4b5563",
+  show_logo: true,
+  show_header: true,
+  show_footer: true,
+  show_vehicle_vin: true,
+  show_vehicle_license: true,
+  show_customer_email: true,
+  show_customer_phone: true,
+  show_customer_address: true,
+};
 
 async function getInvoice(id: string) {
   const supabase = await createClient();
@@ -46,52 +59,35 @@ async function getInvoice(id: string) {
   return { invoice, items: items || [] };
 }
 
-async function getInvoiceSettings(): Promise<InvoiceSettings> {
-  const supabase = await createClient();
-
-  return getOrSet(
-    CACHE_KEYS.INVOICE_SETTINGS,
-    async () => {
-      const { data } = await supabase
-        .from("invoice_settings")
-        .select("*")
-        .single();
-
-      return data || {
-        id: "",
-        logo_url: null,
-        header_text: "Thank you for choosing Benz Automobile for your vehicle service needs.",
-        footer_text: "Payment is due within 30 days. Thank you for your business!",
-        primary_color: "#1f2937",
-        secondary_color: "#4b5563",
-        show_logo: true,
-        show_header: true,
-        show_footer: true,
-        show_vehicle_vin: true,
-        show_vehicle_license: true,
-        show_customer_email: true,
-        show_customer_phone: true,
-        show_customer_address: true,
-      };
-    },
-    CACHE_TTL.LONG
-  );
-}
-
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 export default async function InvoiceDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [invoiceData, settings] = await Promise.all([
+  const [invoiceData, user] = await Promise.all([
     getInvoice(id),
-    getInvoiceSettings(),
+    getUser(),
   ]);
+
+  if (!user) {
+    redirect("/login");
+  }
 
   if (!invoiceData) {
     notFound();
   }
+
+  const isSuperAdmin = user.role === "super_admin";
+
+  // Use stored settings snapshot if available, otherwise use defaults
+  // This ensures past invoices are displayed exactly as they were created
+  const settings: InvoiceSettings = invoiceData.invoice.settings_snapshot
+    ? (invoiceData.invoice.settings_snapshot as InvoiceSettings)
+    : DEFAULT_SETTINGS;
+
+  // Use stored billed_by_name for immutability
+  const billedByName = invoiceData.invoice.billed_by_name || null;
 
   return (
     <Suspense fallback={<FormSkeleton fields={10} />}>
@@ -99,8 +95,9 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
         invoice={invoiceData.invoice}
         items={invoiceData.items}
         settings={settings}
+        isSuperAdmin={isSuperAdmin}
+        billedByName={billedByName}
       />
     </Suspense>
   );
 }
-

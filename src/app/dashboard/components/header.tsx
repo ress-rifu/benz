@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { AuthUser } from "@/lib/auth/get-user";
-import { LogOut, Menu, User } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { logout } from "./actions";
 
 interface HeaderProps {
@@ -19,7 +19,7 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   return (
-    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
+    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6 print:hidden">
       <Button variant="ghost" size="icon" className="lg:hidden">
         <Menu className="h-5 w-5" />
       </Button>
@@ -33,16 +33,20 @@ export function Header({ user }: HeaderProps) {
             className="flex items-center gap-2 hover:bg-slate-100"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200">
-              <User className="h-4 w-4 text-slate-600" />
+              <span className="text-sm font-medium text-slate-600">
+                {user.name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+              </span>
             </div>
             <span className="hidden text-sm font-medium text-slate-700 md:inline-block">
-              {user.email}
+              {user.name || user.email}
             </span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
+          <DropdownMenuLabel>{user.name || "My Account"}</DropdownMenuLabel>
+          <DropdownMenuItem className="text-slate-500" disabled>
+            @{user.username}
+          </DropdownMenuItem>
           <DropdownMenuItem className="text-slate-500" disabled>
             <span className="capitalize">{user.role.replace("_", " ")}</span>
           </DropdownMenuItem>

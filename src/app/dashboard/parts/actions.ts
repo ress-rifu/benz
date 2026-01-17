@@ -208,14 +208,38 @@ export async function adjustPartStock(input: PartStockAdjustmentInput) {
     }
 }
 
-export async function deletePart(id: string) {
+export async function deactivatePart(id: string) {
     try {
         await requireSuperAdmin();
         const supabase = await createClient();
 
         const { error } = await supabase
             .from("parts")
-            .delete()
+            .update({ is_active: false })
+            .eq("id", id);
+
+        if (error) {
+            return { error: error.message };
+        }
+
+        await invalidateCache(CACHE_KEYS.PARTS);
+        await invalidateCache(CACHE_KEYS.PART(id));
+        revalidatePath("/dashboard/parts");
+
+        return { success: true };
+    } catch (e) {
+        return { error: e instanceof Error ? e.message : "An error occurred" };
+    }
+}
+
+export async function reactivatePart(id: string) {
+    try {
+        await requireSuperAdmin();
+        const supabase = await createClient();
+
+        const { error } = await supabase
+            .from("parts")
+            .update({ is_active: true })
             .eq("id", id);
 
         if (error) {

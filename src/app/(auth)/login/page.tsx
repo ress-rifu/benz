@@ -1,5 +1,4 @@
 import { LoginForm } from "./login-form";
-import Link from "next/link";
 
 export default function LoginPage() {
   return (
@@ -13,15 +12,6 @@ export default function LoginPage() {
             <p className="text-slate-400 mt-2">Sign in to your account</p>
           </div>
           <LoginForm />
-          <p className="mt-6 text-center text-sm text-slate-400">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/register"
-              className="text-amber-400 hover:text-amber-300 font-medium transition-colors"
-            >
-              Register
-            </Link>
-          </p>
         </div>
       </div>
     </div>

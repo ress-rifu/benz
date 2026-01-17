@@ -30,6 +30,8 @@ interface InvoiceViewProps {
   invoice: Tables<"invoices">;
   items: Tables<"invoice_items">[];
   settings: InvoiceSettings;
+  isSuperAdmin: boolean;
+  billedByName: string | null;
 }
 
 const statusColors = {
@@ -39,7 +41,7 @@ const statusColors = {
   cancelled: "destructive",
 } as const;
 
-export function InvoiceView({ invoice, items, settings }: InvoiceViewProps) {
+export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByName }: InvoiceViewProps) {
   const handlePrint = () => {
     window.print();
   };
@@ -119,7 +121,7 @@ export function InvoiceView({ invoice, items, settings }: InvoiceViewProps) {
         <Separator className="my-6" />
 
         {/* Customer & Vehicle Info */}
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <h3 className="font-semibold" style={{ color: settings.primary_color }}>
               Bill To
@@ -159,6 +161,16 @@ export function InvoiceView({ invoice, items, settings }: InvoiceViewProps) {
               )}
             </div>
           </div>
+
+          <div>
+            <h3 className="font-semibold" style={{ color: settings.primary_color }}>
+              Billed By
+            </h3>
+            <div className="mt-2 space-y-1 text-sm">
+              <p className="font-medium">{billedByName || "—"}</p>
+              <p className="text-slate-500">{formatDate(invoice.created_at)}</p>
+            </div>
+          </div>
         </div>
 
         {/* Items Table */}
@@ -172,8 +184,12 @@ export function InvoiceView({ invoice, items, settings }: InvoiceViewProps) {
                 <th className="py-2 text-left font-semibold">Description</th>
                 <th className="py-2 text-center font-semibold">Type</th>
                 <th className="py-2 text-right font-semibold">Qty</th>
-                <th className="py-2 text-right font-semibold">Unit Price</th>
-                <th className="py-2 text-right font-semibold">Total</th>
+                {isSuperAdmin && (
+                  <>
+                    <th className="py-2 text-right font-semibold">Unit Price</th>
+                    <th className="py-2 text-right font-semibold">Total</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -186,47 +202,53 @@ export function InvoiceView({ invoice, items, settings }: InvoiceViewProps) {
                     </Badge>
                   </td>
                   <td className="py-3 text-right">{item.quantity}</td>
-                  <td className="py-3 text-right">
-                    {formatCurrency(item.unit_price)}
-                  </td>
-                  <td className="py-3 text-right font-medium">
-                    {formatCurrency(item.total)}
-                  </td>
+                  {isSuperAdmin && (
+                    <>
+                      <td className="py-3 text-right">
+                        {formatCurrency(item.unit_price)}
+                      </td>
+                      <td className="py-3 text-right font-medium">
+                        {formatCurrency(item.total)}
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        {/* Totals */}
-        <div className="mt-6 flex justify-end">
-          <div className="w-64 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-slate-500">Subtotal</span>
-              <span>{formatCurrency(invoice.subtotal)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Tax ({invoice.tax_rate}%)</span>
-              <span>{formatCurrency(invoice.tax_amount)}</span>
-            </div>
-            {invoice.discount_amount > 0 && (
+        {/* Totals - Only for super admin */}
+        {isSuperAdmin && (
+          <div className="mt-6 flex justify-end">
+            <div className="w-64 space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-500">Discount</span>
-                <span className="text-red-500">
-                  -{formatCurrency(invoice.discount_amount)}
-                </span>
+                <span className="text-slate-500">Subtotal</span>
+                <span>{formatCurrency(invoice.subtotal)}</span>
               </div>
-            )}
-            <Separator />
-            <div
-              className="flex justify-between text-lg font-bold"
-              style={{ color: settings.primary_color }}
-            >
-              <span>Total</span>
-              <span>{formatCurrency(invoice.total)}</span>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Tax ({invoice.tax_rate}%)</span>
+                <span>{formatCurrency(invoice.tax_amount)}</span>
+              </div>
+              {invoice.discount_amount > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Discount</span>
+                  <span className="text-red-500">
+                    -{formatCurrency(invoice.discount_amount)}
+                  </span>
+                </div>
+              )}
+              <Separator />
+              <div
+                className="flex justify-between text-lg font-bold"
+                style={{ color: settings.primary_color }}
+              >
+                <span>Total</span>
+                <span>{formatCurrency(invoice.total)}</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Notes */}
         {invoice.notes && (

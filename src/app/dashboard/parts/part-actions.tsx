@@ -8,10 +8,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash2, PackagePlus } from "lucide-react";
+import { MoreHorizontal, Pencil, EyeOff, PackagePlus } from "lucide-react";
 import { useState } from "react";
 import { PartFormDialog } from "./part-form-dialog";
-import { DeletePartDialog } from "./delete-part-dialog";
+import { DeactivatePartDialog } from "./delete-part-dialog";
 import { StockAdjustmentDialog } from "./stock-adjustment-dialog";
 import type { Tables } from "@/types/database";
 
@@ -24,7 +24,7 @@ interface PartActionsProps {
 
 export function PartActions({ part }: PartActionsProps) {
     const [editOpen, setEditOpen] = useState(false);
-    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [deactivateOpen, setDeactivateOpen] = useState(false);
     const [stockOpen, setStockOpen] = useState(false);
 
     return (
@@ -47,11 +47,11 @@ export function PartActions({ part }: PartActionsProps) {
                         Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        onClick={() => setDeleteOpen(true)}
-                        className="text-red-600 focus:text-red-600"
+                        onClick={() => setDeactivateOpen(true)}
+                        className="text-amber-600 focus:text-amber-600"
                     >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
+                        <EyeOff className="mr-2 h-4 w-4" />
+                        Deactivate
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -61,9 +61,9 @@ export function PartActions({ part }: PartActionsProps) {
                 onOpenChange={setEditOpen}
                 part={part}
             />
-            <DeletePartDialog
-                open={deleteOpen}
-                onOpenChange={setDeleteOpen}
+            <DeactivatePartDialog
+                open={deactivateOpen}
+                onOpenChange={setDeactivateOpen}
                 part={part}
             />
             <StockAdjustmentDialog

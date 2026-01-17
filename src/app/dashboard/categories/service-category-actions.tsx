@@ -7,21 +7,24 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, EyeOff } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { ServiceFormDialog } from "./service-form-dialog";
-import { DeactivateServiceDialog } from "./delete-service-dialog";
-import type { Tables } from "@/types/database";
+import { ServiceCategoryFormDialog } from "./service-category-form-dialog";
+import { DeleteCategoryDialog } from "./delete-category-dialog";
 
-interface ServiceActionsProps {
-    service: Tables<"services"> & {
-        service_categories?: { id: string; name: string; name_bn: string | null } | null;
+interface ServiceCategoryActionsProps {
+    category: {
+        id: string;
+        name: string;
+        name_bn: string | null;
+        description: string | null;
+        is_active: boolean;
     };
 }
 
-export function ServiceActions({ service }: ServiceActionsProps) {
+export function ServiceCategoryActions({ category }: ServiceCategoryActionsProps) {
     const [editOpen, setEditOpen] = useState(false);
-    const [deactivateOpen, setDeactivateOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
 
     return (
         <>
@@ -38,24 +41,25 @@ export function ServiceActions({ service }: ServiceActionsProps) {
                         Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        onClick={() => setDeactivateOpen(true)}
-                        className="text-amber-600 focus:text-amber-600"
+                        onClick={() => setDeleteOpen(true)}
+                        className="text-red-600 focus:text-red-600"
                     >
-                        <EyeOff className="mr-2 h-4 w-4" />
-                        Deactivate
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <ServiceFormDialog
+            <ServiceCategoryFormDialog
                 open={editOpen}
                 onOpenChange={setEditOpen}
-                service={service}
+                category={category}
             />
-            <DeactivateServiceDialog
-                open={deactivateOpen}
-                onOpenChange={setDeactivateOpen}
-                service={service}
+            <DeleteCategoryDialog
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
+                category={category}
+                type="service"
             />
         </>
     );

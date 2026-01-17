@@ -94,14 +94,38 @@ export async function updateService(id: string, input: ServiceInput) {
     }
 }
 
-export async function deleteService(id: string) {
+export async function deactivateService(id: string) {
     try {
         await requireSuperAdmin();
         const supabase = await createClient();
 
         const { error } = await supabase
             .from("services")
-            .delete()
+            .update({ is_active: false })
+            .eq("id", id);
+
+        if (error) {
+            return { error: error.message };
+        }
+
+        await invalidateCache(CACHE_KEYS.SERVICES);
+        await invalidateCache(CACHE_KEYS.SERVICE(id));
+        revalidatePath("/dashboard/services");
+
+        return { success: true };
+    } catch (e) {
+        return { error: e instanceof Error ? e.message : "An error occurred" };
+    }
+}
+
+export async function reactivateService(id: string) {
+    try {
+        await requireSuperAdmin();
+        const supabase = await createClient();
+
+        const { error } = await supabase
+            .from("services")
+            .update({ is_active: true })
             .eq("id", id);
 
         if (error) {

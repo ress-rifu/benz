@@ -6,12 +6,13 @@ import { cn } from "@/lib/utils";
 import type { AuthUser } from "@/lib/auth/get-user";
 import {
   LayoutDashboard,
-  Package,
   FileText,
   Settings,
   Wrench,
   Cog,
   Users,
+  FolderTree,
+  UserCog,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -21,10 +22,11 @@ interface SidebarProps {
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Customers", href: "/dashboard/customers", icon: Users },
-  { name: "Inventory", href: "/dashboard/inventory", icon: Package },
+  { name: "Categories", href: "/dashboard/categories", icon: FolderTree, superAdminOnly: true },
   { name: "Services", href: "/dashboard/services", icon: Wrench, superAdminOnly: true },
   { name: "Parts", href: "/dashboard/parts", icon: Cog, superAdminOnly: true },
   { name: "Invoices", href: "/dashboard/invoices", icon: FileText },
+  { name: "Admins", href: "/dashboard/admins", icon: UserCog, superAdminOnly: true },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, superAdminOnly: true },
 ];
 
@@ -36,7 +38,7 @@ export function Sidebar({ user }: SidebarProps) {
   );
 
   return (
-    <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white lg:flex">
+    <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white lg:flex print:hidden">
       <div className="flex h-16 items-center border-b border-slate-200 px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
           <img
@@ -78,12 +80,12 @@ export function Sidebar({ user }: SidebarProps) {
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200">
             <span className="text-sm font-medium text-slate-600">
-              {user.email[0].toUpperCase()}
+              {user.name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
             </span>
           </div>
           <div className="flex-1 truncate">
             <p className="truncate text-sm font-medium text-slate-900">
-              {user.email}
+              {user.name || user.email}
             </p>
             <p className="text-xs text-slate-500 capitalize">{user.role.replace("_", " ")}</p>
           </div>

@@ -13,25 +13,31 @@ import {
 import { useTransition } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { deactivatePart } from "./actions";
-import type { Tables } from "@/types/database";
+import { deleteServiceCategory, deletePartCategory } from "./actions";
 
-interface DeactivatePartDialogProps {
+interface DeleteCategoryDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    part: Tables<"parts">;
+    category: {
+        id: string;
+        name: string;
+    };
+    type: "service" | "part";
 }
 
-export function DeactivatePartDialog({
+export function DeleteCategoryDialog({
     open,
     onOpenChange,
-    part,
-}: DeactivatePartDialogProps) {
+    category,
+    type,
+}: DeleteCategoryDialogProps) {
     const [isPending, startTransition] = useTransition();
 
-    const handleDeactivate = () => {
+    const handleDelete = () => {
         startTransition(async () => {
-            const result = await deactivatePart(part.id);
+            const result = type === "service"
+                ? await deleteServiceCategory(category.id)
+                : await deletePartCategory(category.id);
 
             if (result?.error) {
                 toast({
@@ -42,7 +48,7 @@ export function DeactivatePartDialog({
             } else {
                 toast({
                     title: "Success",
-                    description: "Part deactivated successfully",
+                    description: `${type === "service" ? "Service" : "Part"} category deleted successfully`,
                 });
                 onOpenChange(false);
             }
@@ -53,27 +59,25 @@ export function DeactivatePartDialog({
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Deactivate Part</AlertDialogTitle>
+                    <AlertDialogTitle>Delete Category</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Are you sure you want to deactivate &quot;{part.name}&quot; (SKU: {part.sku})?
-                        The part will be hidden from lists but preserved in the system for historical records.
+                        Are you sure you want to delete &quot;{category.name}&quot;? This
+                        action cannot be undone. All {type === "service" ? "services" : "parts"}
+                        using this category will need to be updated.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                        onClick={handleDeactivate}
+                        onClick={handleDelete}
                         disabled={isPending}
-                        className="bg-amber-600 hover:bg-amber-700"
+                        className="bg-red-600 hover:bg-red-700"
                     >
                         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Deactivate
+                        Delete
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
     );
 }
-
-// Keep the old export name for backward compatibility
-export { DeactivatePartDialog as DeletePartDialog };

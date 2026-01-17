@@ -13,7 +13,11 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
-import { RevenueLineChart, RevenueBarChart, StatusPieChart } from "./components/revenue-charts";
+import { RevenueBarChart, StatusPieChart } from "./components/revenue-charts";
+
+interface DashboardContentProps {
+  isSuperAdmin: boolean;
+}
 
 interface DashboardSummary {
   totalInventoryItems: number;
@@ -177,88 +181,90 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
   );
 }
 
-export async function DashboardContent() {
+export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) {
   const summary = await getDashboardSummary();
 
   return (
     <div className="space-y-6">
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-700">
-              This Month Revenue
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-800">
-              {formatCurrency(summary.monthlyRevenue)}
-            </div>
-            <div className="flex items-center gap-1 text-xs">
-              {summary.revenueGrowth >= 0 ? (
-                <>
-                  <TrendingUp className="h-3 w-3 text-green-600" />
-                  <span className="text-green-600">+{summary.revenueGrowth.toFixed(1)}%</span>
-                </>
-              ) : (
-                <>
-                  <TrendingDown className="h-3 w-3 text-red-600" />
-                  <span className="text-red-600">{summary.revenueGrowth.toFixed(1)}%</span>
-                </>
-              )}
-              <span className="text-slate-500">vs last month</span>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Key Metrics - Finance cards only for super admin */}
+      {isSuperAdmin && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-700">
+                This Month Revenue
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-800">
+                {formatCurrency(summary.monthlyRevenue)}
+              </div>
+              <div className="flex items-center gap-1 text-xs">
+                {summary.revenueGrowth >= 0 ? (
+                  <>
+                    <TrendingUp className="h-3 w-3 text-green-600" />
+                    <span className="text-green-600">+{summary.revenueGrowth.toFixed(1)}%</span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingDown className="h-3 w-3 text-red-600" />
+                    <span className="text-red-600">{summary.revenueGrowth.toFixed(1)}%</span>
+                  </>
+                )}
+                <span className="text-slate-500">vs last month</span>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-700">
-              This Week Revenue
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-800">
-              {formatCurrency(summary.weeklyRevenue)}
-            </div>
-            <p className="text-xs text-blue-600">Last 7 days</p>
-          </CardContent>
-        </Card>
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-700">
+                This Week Revenue
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-800">
+                {formatCurrency(summary.weeklyRevenue)}
+              </div>
+              <p className="text-xs text-blue-600">Last 7 days</p>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-amber-700">
-              Total Revenue
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-amber-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-800">
-              {formatCurrency(summary.totalRevenue)}
-            </div>
-            <p className="text-xs text-amber-600">All time (paid invoices)</p>
-          </CardContent>
-        </Card>
+          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-amber-700">
+                Total Revenue
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-amber-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-800">
+                {formatCurrency(summary.totalRevenue)}
+              </div>
+              <p className="text-xs text-amber-600">All time (paid invoices)</p>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-700">
-              Total Invoices
-            </CardTitle>
-            <FileText className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-800">
-              {summary.totalInvoices}
-            </div>
-            <p className="text-xs text-purple-600">All statuses</p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-purple-700">
+                Total Invoices
+              </CardTitle>
+              <FileText className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-800">
+                {summary.totalInvoices}
+              </div>
+              <p className="text-xs text-purple-600">All statuses</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-      {/* Secondary Metrics */}
+      {/* Secondary Metrics - Visible to all */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -299,19 +305,48 @@ export async function DashboardContent() {
             <div className="text-2xl font-bold text-amber-600">{summary.lowStockItems}</div>
           </CardContent>
         </Card>
+
+        {!isSuperAdmin && (
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-purple-700">
+                Total Invoices
+              </CardTitle>
+              <FileText className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-800">
+                {summary.totalInvoices}
+              </div>
+              <p className="text-xs text-purple-600">All statuses</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      {/* Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <RevenueBarChart
-          data={summary.weeklyRevenueData}
-          title="Revenue (Last 7 Days)"
-        />
-        <StatusPieChart
-          data={summary.invoiceStatusBreakdown}
-          title="Invoice Status Breakdown"
-        />
-      </div>
+      {/* Charts - Only for super admin */}
+      {isSuperAdmin && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <RevenueBarChart
+            data={summary.weeklyRevenueData}
+            title="Revenue (Last 7 Days)"
+          />
+          <StatusPieChart
+            data={summary.invoiceStatusBreakdown}
+            title="Invoice Status Breakdown"
+          />
+        </div>
+      )}
+
+      {/* Invoice Status Chart for regular admins (without revenue) */}
+      {!isSuperAdmin && (
+        <div className="max-w-md">
+          <StatusPieChart
+            data={summary.invoiceStatusBreakdown}
+            title="Invoice Status Breakdown"
+          />
+        </div>
+      )}
 
       {/* Recent Invoices */}
       <Card>
@@ -337,9 +372,11 @@ export async function DashboardContent() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-slate-900">
-                      {formatCurrency(invoice.total)}
-                    </p>
+                    {isSuperAdmin && (
+                      <p className="font-medium text-slate-900">
+                        {formatCurrency(invoice.total)}
+                      </p>
+                    )}
                     <div className="flex items-center gap-2">
                       <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${invoice.status === "paid" ? "bg-green-100 text-green-700" :
                           invoice.status === "pending" ? "bg-amber-100 text-amber-700" :

@@ -8,6 +8,29 @@ import { CACHE_KEYS } from "@/lib/redis/client";
 import { invoiceSchema, type InvoiceInput } from "@/lib/validations/invoice";
 import { generateInvoiceNumber } from "@/lib/utils";
 
+async function getInvoiceSettings(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data } = await supabase
+    .from("invoice_settings")
+    .select("*")
+    .single();
+
+  return data || {
+    logo_url: null,
+    header_text: "Thank you for choosing Benz Automobile for your vehicle service needs.",
+    footer_text: "Payment is due within 30 days. Thank you for your business!",
+    primary_color: "#1f2937",
+    secondary_color: "#4b5563",
+    show_logo: true,
+    show_header: true,
+    show_footer: true,
+    show_vehicle_vin: true,
+    show_vehicle_license: true,
+    show_customer_email: true,
+    show_customer_phone: true,
+    show_customer_address: true,
+  };
+}
+
 export async function createInvoice(input: InvoiceInput) {
   try {
     const user = await requireAdmin();
@@ -19,6 +42,9 @@ export async function createInvoice(input: InvoiceInput) {
     }
 
     const supabase = await createClient();
+
+    // Fetch current settings to snapshot
+    const settings = await getInvoiceSettings(supabase);
     const data = parsed.data;
 
     // Validate stock availability for parts
@@ -82,6 +108,8 @@ export async function createInvoice(input: InvoiceInput) {
         notes: data.notes || null,
         status: "pending",
         created_by: user.id,
+        billed_by_name: user.name || null,
+        settings_snapshot: settings,
       })
       .select()
       .single();

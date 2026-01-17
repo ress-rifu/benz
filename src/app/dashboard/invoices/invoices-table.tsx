@@ -10,16 +10,35 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Eye } from "lucide-react";
+import { Eye, FileX } from "lucide-react";
 import Link from "next/link";
 import type { Tables } from "@/types/database";
 
-async function getInvoices(): Promise<Tables<"invoices">[]> {
+interface InvoicesTableProps {
+  searchQuery?: string;
+  statusFilter?: string;
+  isSuperAdmin: boolean;
+}
+
+async function getInvoices(searchQuery?: string, statusFilter?: string): Promise<Tables<"invoices">[]> {
   const supabase = await createClient();
-  const { data } = await supabase
+  
+  let query = supabase
     .from("invoices")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (statusFilter) {
+    query = query.eq("status", statusFilter);
+  }
+
+  if (searchQuery) {
+    query = query.or(
+      `invoice_number.ilike.%${searchQuery}%,customer_name.ilike.%${searchQuery}%,vehicle_make.ilike.%${searchQuery}%,vehicle_model.ilike.%${searchQuery}%`
+    );
+  }
+
+  const { data } = await query;
   return data || [];
 }
 
@@ -30,16 +49,29 @@ const statusColors = {
   cancelled: "destructive",
 } as const;
 
-export async function InvoicesTable() {
-  const invoices = await getInvoices();
+export async function InvoicesTable({ searchQuery, statusFilter, isSuperAdmin }: InvoicesTableProps) {
+  const invoices = await getInvoices(searchQuery, statusFilter);
 
   if (invoices.length === 0) {
+    const hasFilters = searchQuery || statusFilter;
     return (
       <div className="rounded-lg border border-dashed border-slate-300 p-12 text-center">
-        <p className="text-slate-500">No invoices yet</p>
-        <p className="mt-1 text-sm text-slate-400">
-          Create your first invoice to get started
-        </p>
+        {hasFilters ? (
+          <>
+            <FileX className="mx-auto h-12 w-12 text-slate-300" />
+            <p className="mt-4 text-slate-500">No invoices found</p>
+            <p className="mt-1 text-sm text-slate-400">
+              Try adjusting your search or filter criteria
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-slate-500">No invoices yet</p>
+            <p className="mt-1 text-sm text-slate-400">
+              Create your first invoice to get started
+            </p>
+          </>
+        )}
       </div>
     );
   }
@@ -53,7 +85,7 @@ export async function InvoicesTable() {
             <TableHead>Customer</TableHead>
             <TableHead>Vehicle</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="text-right">Total</TableHead>
+            {isSuperAdmin && <TableHead className="text-right">Total</TableHead>}
             <TableHead>Date</TableHead>
             <TableHead className="w-[80px]">View</TableHead>
           </TableRow>
@@ -75,9 +107,11 @@ export async function InvoicesTable() {
                   {invoice.status}
                 </Badge>
               </TableCell>
-              <TableCell className="text-right font-medium">
-                {formatCurrency(invoice.total)}
-              </TableCell>
+              {isSuperAdmin && (
+                <TableCell className="text-right font-medium">
+                  {formatCurrency(invoice.total)}
+                </TableCell>
+              )}
               <TableCell className="text-slate-500">
                 {formatDate(invoice.created_at)}
               </TableCell>

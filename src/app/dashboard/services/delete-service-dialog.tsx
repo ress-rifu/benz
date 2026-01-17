@@ -13,25 +13,25 @@ import {
 import { useTransition } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { deleteService } from "./actions";
+import { deactivateService } from "./actions";
 import type { Tables } from "@/types/database";
 
-interface DeleteServiceDialogProps {
+interface DeactivateServiceDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     service: Tables<"services">;
 }
 
-export function DeleteServiceDialog({
+export function DeactivateServiceDialog({
     open,
     onOpenChange,
     service,
-}: DeleteServiceDialogProps) {
+}: DeactivateServiceDialogProps) {
     const [isPending, startTransition] = useTransition();
 
-    const handleDelete = () => {
+    const handleDeactivate = () => {
         startTransition(async () => {
-            const result = await deleteService(service.id);
+            const result = await deactivateService(service.id);
 
             if (result?.error) {
                 toast({
@@ -42,7 +42,7 @@ export function DeleteServiceDialog({
             } else {
                 toast({
                     title: "Success",
-                    description: "Service deleted successfully",
+                    description: "Service deactivated successfully",
                 });
                 onOpenChange(false);
             }
@@ -53,24 +53,27 @@ export function DeleteServiceDialog({
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Service</AlertDialogTitle>
+                    <AlertDialogTitle>Deactivate Service</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Are you sure you want to delete &quot;{service.name}&quot;? This
-                        action cannot be undone.
+                        Are you sure you want to deactivate &quot;{service.name}&quot;?
+                        The service will be hidden from lists but preserved in the system for historical records.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                        onClick={handleDelete}
+                        onClick={handleDeactivate}
                         disabled={isPending}
-                        className="bg-red-600 hover:bg-red-700"
+                        className="bg-amber-600 hover:bg-amber-700"
                     >
                         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Delete
+                        Deactivate
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
     );
 }
+
+// Keep the old export name for backward compatibility
+export { DeactivateServiceDialog as DeleteServiceDialog };

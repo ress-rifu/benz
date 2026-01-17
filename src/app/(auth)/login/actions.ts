@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { redirect } from "next/navigation";
 import { rateLimit } from "@/lib/redis/rate-limit";
@@ -20,15 +20,37 @@ export async function login(input: LoginInput) {
     return { error: "Invalid input" };
   }
 
+  const { identifier, password } = parsed.data;
+  
+  // Check if identifier is an email or username
+  const isEmail = identifier.includes("@");
+  let email = identifier;
+  
+  if (!isEmail) {
+    // Lookup email by username using admin client to bypass RLS
+    const adminClient = createAdminClient();
+    const { data: user, error: lookupError } = await adminClient
+      .from("users")
+      .select("email")
+      .eq("username", identifier)
+      .single();
+    
+    if (lookupError || !user) {
+      return { error: "Invalid username or password" };
+    }
+    
+    email = user.email;
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
+    email,
+    password,
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: "Invalid credentials" };
   }
 
   redirect("/dashboard");

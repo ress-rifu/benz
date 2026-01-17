@@ -15,6 +15,8 @@ export interface Database {
         Row: {
           id: string;
           email: string;
+          username: string;
+          name: string;
           role: UserRole;
           created_at: string;
           updated_at: string;
@@ -22,6 +24,8 @@ export interface Database {
         Insert: {
           id: string;
           email: string;
+          username: string;
+          name: string;
           role?: UserRole;
           created_at?: string;
           updated_at?: string;
@@ -29,6 +33,8 @@ export interface Database {
         Update: {
           id?: string;
           email?: string;
+          username?: string;
+          name?: string;
           role?: UserRole;
           created_at?: string;
           updated_at?: string;
@@ -153,6 +159,8 @@ export interface Database {
           notes: string | null;
           status: "draft" | "pending" | "paid" | "cancelled";
           created_by: string;
+          billed_by_name: string | null;
+          settings_snapshot: Json | null;
           created_at: string;
           updated_at: string;
         };
@@ -176,31 +184,13 @@ export interface Database {
           notes?: string | null;
           status?: "draft" | "pending" | "paid" | "cancelled";
           created_by: string;
+          billed_by_name?: string | null;
+          settings_snapshot?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
-          id?: string;
-          invoice_number?: string;
-          customer_name?: string;
-          customer_email?: string | null;
-          customer_phone?: string | null;
-          customer_address?: string | null;
-          vehicle_make?: string;
-          vehicle_model?: string;
-          vehicle_year?: number | null;
-          vehicle_vin?: string | null;
-          vehicle_license_plate?: string | null;
-          subtotal?: number;
-          tax_rate?: number;
-          tax_amount?: number;
-          discount_amount?: number;
-          total?: number;
-          notes?: string | null;
           status?: "draft" | "pending" | "paid" | "cancelled";
-          created_by?: string;
-          created_at?: string;
-          updated_at?: string;
         };
         Relationships: [
           {
