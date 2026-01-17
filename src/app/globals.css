@@ -138,8 +138,15 @@
 
 /* Special class to hide main content when modal printing */
 @media print {
-  body.printing-modal > div#__next > div > div > main {
-    display: none !important;
+  /* Hide EVERYTHING when printing from modal */
+  body.printing-modal * {
+    visibility: hidden !important;
+  }
+  
+  /* Show only the dialog portal and its contents */
+  body.printing-modal [data-radix-portal],
+  body.printing-modal [data-radix-portal] * {
+    visibility: visible !important;
   }
   
   body.printing-modal [data-radix-portal] {
