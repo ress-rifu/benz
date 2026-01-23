@@ -6,14 +6,27 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Tables } from "@/types/database";
-import { Eye, Printer, X } from "lucide-react";
-import { useState } from "react";
+import { Eye, Printer, X, CheckCircle } from "lucide-react";
+import { useState, useTransition } from "react";
 import Image from "next/image";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { updateInvoiceStatus } from "./[id]/actions";
+import { toast } from "@/hooks/use-toast";
 
 interface InvoiceSettings {
   logo_url: string | null;
@@ -55,12 +68,34 @@ interface InvoiceModalProps {
 
 export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps) {
   const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [currentStatus, setCurrentStatus] = useState(invoice.status);
   
   const settings: InvoiceSettings = invoice.settings_snapshot
     ? (invoice.settings_snapshot as unknown as InvoiceSettings)
     : DEFAULT_SETTINGS;
 
   const billedByName = invoice.billed_by_name || null;
+
+  const handleStatusChange = () => {
+    startTransition(async () => {
+      const result = await updateInvoiceStatus(invoice.id, "paid");
+      
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else {
+        setCurrentStatus("paid");
+        toast({
+          title: "Success",
+          description: "Invoice marked as paid",
+        });
+      }
+    });
+  };
 
   const handlePrint = () => {
     // Add class to body to enable modal-specific print styles
@@ -113,6 +148,42 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
               <p className="text-xs sm:text-sm text-slate-500">{formatDate(invoice.created_at)}</p>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              <Badge
+                variant={currentStatus === "paid" ? "default" : "secondary"}
+                className={
+                  currentStatus === "paid"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-orange-500 hover:bg-orange-600"
+                }
+              >
+                {currentStatus === "paid" ? "Paid" : "Due"}
+              </Badge>
+              {currentStatus === "due" && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={isPending} className="hidden sm:flex">
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Mark as Paid
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Mark Invoice as Paid?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will update the invoice status to "Paid" and include it in revenue
+                        calculations. This action will update the dashboard and sales reports
+                        immediately.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleStatusChange}>
+                        Confirm
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
               <Button onClick={handlePrint} variant="outline" size="sm" className="hidden sm:flex">
                 <Printer className="mr-2 h-4 w-4" />
                 Print
@@ -166,8 +237,15 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
                   INVOICE
                 </p>
                 <p className="font-mono text-base sm:text-lg">{invoice.invoice_number}</p>
-                <Badge variant="default" className="mt-2">
-                  PAID
+                <Badge
+                  variant={currentStatus === "paid" ? "default" : "secondary"}
+                  className={
+                    currentStatus === "paid"
+                      ? "mt-2 bg-green-600 hover:bg-green-700"
+                      : "mt-2 bg-orange-500 hover:bg-orange-600"
+                  }
+                >
+                  {currentStatus === "paid" ? "PAID" : "DUE"}
                 </Badge>
               </div>
             </div>

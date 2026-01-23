@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { AuthUser } from "@/lib/auth/get-user";
+import { useLanguage } from "@/lib/language/language-context";
 import {
   LayoutDashboard,
   FileText,
@@ -13,25 +14,28 @@ import {
   Users,
   FolderTree,
   UserCog,
+  DollarSign,
 } from "lucide-react";
 
 interface SidebarProps {
   user: AuthUser;
 }
 
-const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Customers", href: "/dashboard/customers", icon: Users },
-  { name: "Categories", href: "/dashboard/categories", icon: FolderTree, superAdminOnly: true },
-  { name: "Services", href: "/dashboard/services", icon: Wrench, superAdminOnly: true },
-  { name: "Parts", href: "/dashboard/parts", icon: Cog, superAdminOnly: true },
-  { name: "Invoices", href: "/dashboard/invoices", icon: FileText },
-  { name: "Admins", href: "/dashboard/admins", icon: UserCog, superAdminOnly: true },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings, superAdminOnly: true },
-];
-
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
+  const { t } = useLanguage();
+
+  const navigation = [
+    { name: t("dashboard.title"), href: "/dashboard", icon: LayoutDashboard },
+    { name: t("dashboard.customers"), href: "/dashboard/customers", icon: Users },
+    { name: t("dashboard.categories"), href: "/dashboard/categories", icon: FolderTree, superAdminOnly: true },
+    { name: t("dashboard.services"), href: "/dashboard/services", icon: Wrench, superAdminOnly: true },
+    { name: t("dashboard.parts"), href: "/dashboard/parts", icon: Cog, superAdminOnly: true },
+    { name: t("dashboard.invoices"), href: "/dashboard/invoices", icon: FileText },
+    { name: t("dashboard.sales"), href: "/dashboard/sales", icon: DollarSign },
+    { name: t("dashboard.admins"), href: "/dashboard/admins", icon: UserCog, superAdminOnly: true },
+    { name: t("dashboard.settings"), href: "/dashboard/settings", icon: Settings, superAdminOnly: true },
+  ];
 
   const filteredNavigation = navigation.filter(
     (item) => !item.superAdminOnly || user.role === "super_admin"

@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { FileX } from "lucide-react";
 import type { Tables } from "@/types/database";
@@ -56,6 +57,7 @@ export function InvoicesTableClient({ invoices, isSuperAdmin, hasFilters }: Invo
               <TableHead>Customer</TableHead>
               <TableHead>Vehicle</TableHead>
               {isSuperAdmin && <TableHead className="text-right">Total</TableHead>}
+              <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
               <TableHead className="w-[80px]">View</TableHead>
             </TableRow>
@@ -77,6 +79,18 @@ export function InvoicesTableClient({ invoices, isSuperAdmin, hasFilters }: Invo
                     {formatCurrency(invoice.total)}
                   </TableCell>
                 )}
+                <TableCell>
+                  <Badge
+                    variant={invoice.status === "paid" ? "default" : "secondary"}
+                    className={
+                      invoice.status === "paid"
+                        ? "bg-green-600 hover:bg-green-700"
+                        : "bg-orange-500 hover:bg-orange-600"
+                    }
+                  >
+                    {invoice.status === "paid" ? "Paid" : "Due"}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-slate-500">
                   {formatDate(invoice.created_at)}
                 </TableCell>

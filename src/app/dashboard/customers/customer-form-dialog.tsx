@@ -23,6 +23,7 @@ import { useTransition, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import type { Tables } from "@/types/database";
+import { useLanguage } from "@/lib/language/language-context";
 
 interface CustomerFormDialogProps {
     open: boolean;
@@ -37,6 +38,7 @@ export function CustomerFormDialog({
 }: CustomerFormDialogProps) {
     const [isPending, startTransition] = useTransition();
     const isEditing = !!customer;
+    const { t } = useLanguage();
 
     const {
         register,
@@ -96,16 +98,16 @@ export function CustomerFormDialog({
 
             if (result?.error) {
                 toast({
-                    title: "Error",
+                    title: t("forms.error"),
                     description: result.error,
                     variant: "destructive",
                 });
             } else {
                 toast({
-                    title: "Success",
+                    title: t("forms.success"),
                     description: isEditing
-                        ? "Customer updated successfully"
-                        : "Customer created successfully",
+                        ? t("forms.customerUpdated")
+                        : t("forms.customerCreated"),
                 });
                 onOpenChange(false);
             }
@@ -117,19 +119,19 @@ export function CustomerFormDialog({
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>
-                        {isEditing ? "Edit Customer" : "Add Customer"}
+                        {isEditing ? t("forms.editCustomer") : t("forms.addCustomer")}
                     </DialogTitle>
                     <DialogDescription>
                         {isEditing
-                            ? "Update the customer details below"
-                            : "Add a new customer to your database"}
+                            ? t("forms.editCustomer")
+                            : t("forms.addCustomer")}
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Name *</Label>
-                        <Input id="name" {...register("name")} />
+                        <Label htmlFor="name">{t("forms.name")} *</Label>
+                        <Input id="name" placeholder={t("forms.enterName")} {...register("name")} />
                         {errors.name && (
                             <p className="text-sm text-red-500">{errors.name.message}</p>
                         )}
@@ -137,12 +139,12 @@ export function CustomerFormDialog({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="phone">Phone</Label>
-                            <Input id="phone" {...register("phone")} />
+                            <Label htmlFor="phone">{t("forms.phone")}</Label>
+                            <Input id="phone" placeholder={t("forms.enterPhone")} {...register("phone")} />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" {...register("email")} />
+                            <Label htmlFor="email">{t("forms.email")}</Label>
+                            <Input id="email" type="email" placeholder={t("forms.enterEmail")} {...register("email")} />
                             {errors.email && (
                                 <p className="text-sm text-red-500">{errors.email.message}</p>
                             )}
@@ -150,13 +152,13 @@ export function CustomerFormDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="address">Address</Label>
-                        <Textarea id="address" {...register("address")} />
+                        <Label htmlFor="address">{t("forms.address")}</Label>
+                        <Textarea id="address" placeholder={t("forms.enterAddress")} {...register("address")} />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="notes">Notes</Label>
-                        <Textarea id="notes" {...register("notes")} placeholder="Internal notes about this customer..." />
+                        <Label htmlFor="notes">{t("forms.notes")}</Label>
+                        <Textarea id="notes" {...register("notes")} placeholder={`${t("forms.notes")} (${t("forms.optional")})`} />
                     </div>
 
                     <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
@@ -166,11 +168,11 @@ export function CustomerFormDialog({
                             className="w-full sm:w-auto"
                             onClick={() => onOpenChange(false)}
                         >
-                            Cancel
+                            {t("common.cancel")}
                         </Button>
                         <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {isEditing ? "Update" : "Create"}
+                            {isPending ? t("forms.saving") : (isEditing ? t("common.update") : t("common.create"))}
                         </Button>
                     </DialogFooter>
                 </form>

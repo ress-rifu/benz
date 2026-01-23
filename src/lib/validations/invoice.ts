@@ -23,6 +23,7 @@ export const invoiceSchema = z.object({
   tax_rate: z.number().min(0).max(100),
   discount_amount: z.number().min(0),
   notes: z.string().max(2000).optional().nullable(),
+  status: z.enum(["due", "paid"]).default("paid"),
   items: z.array(invoiceItemSchema).min(1, "At least one item is required"),
 });
 

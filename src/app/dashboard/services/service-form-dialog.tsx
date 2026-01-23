@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "@/lib/language/language-context";
 import {
     Dialog,
     DialogContent,
@@ -42,6 +43,7 @@ export function ServiceFormDialog({
     onOpenChange,
     service,
 }: ServiceFormDialogProps) {
+    const { t } = useLanguage();
     const [isPending, startTransition] = useTransition();
     const [categories, setCategories] = useState<Tables<"service_categories">[]>([]);
     const isEditing = !!service;
@@ -106,16 +108,16 @@ export function ServiceFormDialog({
 
             if (result?.error) {
                 toast({
-                    title: "Error",
+                    title: t("forms.error"),
                     description: result.error,
                     variant: "destructive",
                 });
             } else {
                 toast({
-                    title: "Success",
+                    title: t("forms.success"),
                     description: isEditing
-                        ? "Service updated successfully"
-                        : "Service created successfully",
+                        ? t("forms.serviceUpdated")
+                        : t("forms.serviceCreated"),
                 });
                 onOpenChange(false);
             }
@@ -127,25 +129,25 @@ export function ServiceFormDialog({
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>
-                        {isEditing ? "Edit Service" : "Add Service"}
+                        {isEditing ? t("forms.editService") : t("forms.addService")}
                     </DialogTitle>
                     <DialogDescription>
                         {isEditing
-                            ? "Update the service details below"
-                            : "Add a new automotive service"}
+                            ? t("forms.updateServiceDetails")
+                            : t("forms.addNewService")}
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="category_id">Category</Label>
+                        <Label htmlFor="category_id">{t("forms.category")}</Label>
                         <Controller
                             name="category_id"
                             control={control}
                             render={({ field }) => (
                                 <Select onValueChange={field.onChange} value={field.value}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select a category" />
+                                        <SelectValue placeholder={t("forms.selectCategory")} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {categories.map((cat) => (
@@ -164,22 +166,22 @@ export function ServiceFormDialog({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Name (English)</Label>
-                            <Input id="name" {...register("name")} />
+                            <Label htmlFor="name">{t("forms.serviceName")}</Label>
+                            <Input id="name" placeholder={t("forms.enterName")} {...register("name")} />
                             {errors.name && (
                                 <p className="text-sm text-red-500">{errors.name.message}</p>
                             )}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="name_bn">Name (Bengali)</Label>
+                            <Label htmlFor="name_bn">{t("forms.serviceNameBangla")}</Label>
                             <Input id="name_bn" {...register("name_bn")} placeholder="বাংলা নাম" />
                         </div>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="price">Price (৳ BDT)</Label>
+                            <Label htmlFor="price">{t("forms.servicePrice")} (৳)</Label>
                             <Input
                                 id="price"
                                 type="number"
@@ -192,18 +194,18 @@ export function ServiceFormDialog({
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="duration_minutes">Duration (minutes)</Label>
+                            <Label htmlFor="duration_minutes">{t("forms.duration")} ({t("forms.optional")})</Label>
                             <Input
                                 id="duration_minutes"
                                 type="number"
                                 {...register("duration_minutes", { valueAsNumber: true })}
-                                placeholder="Optional"
+                                placeholder={t("forms.optional")}
                             />
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="description">Description (Optional)</Label>
+                        <Label htmlFor="description">{t("forms.description")} ({t("forms.optional")})</Label>
                         <Textarea id="description" {...register("description")} />
                     </div>
 
@@ -214,11 +216,11 @@ export function ServiceFormDialog({
                             className="w-full sm:w-auto"
                             onClick={() => onOpenChange(false)}
                         >
-                            Cancel
+                            {t("common.cancel")}
                         </Button>
                         <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {isEditing ? "Update" : "Create"}
+                            {isEditing ? t("forms.update") : t("forms.create")}
                         </Button>
                     </DialogFooter>
                 </form>

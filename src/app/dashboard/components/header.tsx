@@ -13,6 +13,8 @@ import type { AuthUser } from "@/lib/auth/get-user";
 import { LogOut } from "lucide-react";
 import { logout } from "./actions";
 import { MobileSidebar } from "./mobile-sidebar";
+import { LanguageToggle } from "@/components/ui/language-toggle";
+import { useLanguage } from "@/lib/language/language-context";
 import Link from "next/link";
 
 interface HeaderProps {
@@ -20,6 +22,8 @@ interface HeaderProps {
 }
 
 export function Header({ user }: HeaderProps) {
+  const { t } = useLanguage();
+  
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6 print:hidden">
       {/* Left side - Mobile menu button */}
@@ -42,12 +46,15 @@ export function Header({ user }: HeaderProps) {
       {/* Spacer for desktop */}
       <div className="hidden lg:block flex-1" />
 
-      {/* Right side - User menu */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="flex items-center gap-2 hover:bg-slate-100"
+      {/* Right side - Language toggle and User menu */}
+      <div className="flex items-center gap-2">
+        <LanguageToggle />
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="flex items-center gap-2 hover:bg-slate-100"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200">
               <span className="text-sm font-medium text-slate-600">
@@ -73,10 +80,11 @@ export function Header({ user }: HeaderProps) {
             onClick={() => logout()}
           >
             <LogOut className="mr-2 h-4 w-4" />
-            Sign out
+            {t("common.logout")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </header>
   );
 }

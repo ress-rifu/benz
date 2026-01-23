@@ -60,6 +60,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
       tax_rate: 0,
       discount_amount: 0,
       notes: "",
+      status: "paid",
       items: [{ type: "service", description: "", quantity: 1, unit_price: 0 }],
     },
   });
@@ -611,6 +612,25 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                   {...register("discount_amount", { valueAsNumber: true })}
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Payment Status</Label>
+              <Select
+                value={watch("status") || "paid"}
+                onValueChange={(value: "due" | "paid") => setValue("status", value)}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="due">Due</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Select "Paid" if payment received, "Due" if payment pending
+              </p>
             </div>
 
             <Separator />

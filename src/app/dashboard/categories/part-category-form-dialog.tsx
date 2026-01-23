@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "@/lib/language/language-context";
 import {
     Dialog,
     DialogContent,
@@ -43,6 +44,7 @@ export function PartCategoryFormDialog({
     onOpenChange,
     category,
 }: PartCategoryFormDialogProps) {
+    const { t } = useLanguage();
     const [isPending, startTransition] = useTransition();
     const isEditing = !!category;
 
@@ -97,16 +99,16 @@ export function PartCategoryFormDialog({
 
             if (result?.error) {
                 toast({
-                    title: "Error",
+                    title: t("forms.error"),
                     description: result.error,
                     variant: "destructive",
                 });
             } else {
                 toast({
-                    title: "Success",
+                    title: t("forms.success"),
                     description: isEditing
-                        ? "Part category updated successfully"
-                        : "Part category created successfully",
+                        ? t("forms.partCategoryUpdated")
+                        : t("forms.partCategoryCreated"),
                 });
                 onOpenChange(false);
             }
@@ -118,36 +120,36 @@ export function PartCategoryFormDialog({
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>
-                        {isEditing ? "Edit Part Category" : "Add Part Category"}
+                        {isEditing ? t("forms.editPartCategory") : t("forms.addPartCategory")}
                     </DialogTitle>
                     <DialogDescription>
                         {isEditing
-                            ? "Update the part category details below"
-                            : "Add a new part category"}
+                            ? t("forms.updateCategoryDetails")
+                            : t("forms.addNewPartCategory")}
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Name (English) *</Label>
-                        <Input id="name" {...register("name", { required: "Name is required" })} />
+                        <Label htmlFor="name">{t("forms.categoryName")} *</Label>
+                        <Input id="name" placeholder={t("forms.enterName")} {...register("name", { required: "Name is required" })} />
                         {errors.name && (
                             <p className="text-sm text-red-500">{errors.name.message}</p>
                         )}
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="name_bn">Name (Bengali)</Label>
+                        <Label htmlFor="name_bn">{t("forms.categoryNameBangla")}</Label>
                         <Input id="name_bn" {...register("name_bn")} placeholder="বাংলা নাম" />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="description">Description</Label>
+                        <Label htmlFor="description">{t("forms.description")}</Label>
                         <Textarea id="description" {...register("description")} />
                     </div>
 
                     <div className="flex items-center justify-between rounded-lg border p-3">
-                        <Label htmlFor="is_active" className="cursor-pointer">Active</Label>
+                        <Label htmlFor="is_active" className="cursor-pointer">{t("forms.active")}</Label>
                         <Switch
                             id="is_active"
                             checked={watch("is_active")}
@@ -162,11 +164,11 @@ export function PartCategoryFormDialog({
                             className="w-full sm:w-auto"
                             onClick={() => onOpenChange(false)}
                         >
-                            Cancel
+                            {t("common.cancel")}
                         </Button>
                         <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {isEditing ? "Update" : "Create"}
+                            {isEditing ? t("forms.update") : t("forms.create")}
                         </Button>
                     </DialogFooter>
                 </form>

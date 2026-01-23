@@ -5,9 +5,23 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Tables } from "@/types/database";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, Printer, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useTransition } from "react";
+import { updateInvoiceStatus } from "./actions";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface InvoiceSettings {
   logo_url: string | null;
@@ -34,6 +48,9 @@ interface InvoiceViewProps {
 }
 
 export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByName }: InvoiceViewProps) {
+  const [isPending, startTransition] = useTransition();
+  const [currentStatus, setCurrentStatus] = useState(invoice.status);
+
   const handlePrint = () => {
     // Wait for all images to load before printing
     const images = document.querySelectorAll('img');
@@ -50,6 +67,26 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
       setTimeout(() => {
         window.print();
       }, 150);
+    });
+  };
+
+  const handleStatusChange = () => {
+    startTransition(async () => {
+      const result = await updateInvoiceStatus(invoice.id, "paid");
+      
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else {
+        setCurrentStatus("paid");
+        toast({
+          title: "Success",
+          description: "Invoice marked as paid",
+        });
+      }
     });
   };
 
@@ -71,6 +108,42 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Badge
+            variant={currentStatus === "paid" ? "default" : "secondary"}
+            className={
+              currentStatus === "paid"
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-orange-500 hover:bg-orange-600"
+            }
+          >
+            {currentStatus === "paid" ? "Paid" : "Due"}
+          </Badge>
+          {currentStatus === "due" && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" disabled={isPending}>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Mark as Paid
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Mark Invoice as Paid?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will update the invoice status to "Paid" and include it in revenue
+                    calculations. This action will update the dashboard and sales reports
+                    immediately.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleStatusChange}>
+                    Confirm
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <Button onClick={handlePrint} variant="outline">
             <Printer className="mr-2 h-4 w-4" />
             Print
@@ -119,8 +192,15 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
               INVOICE
             </p>
             <p className="font-mono text-lg">{invoice.invoice_number}</p>
-            <Badge variant="default" className="mt-2">
-              PAID
+            <Badge
+              variant={currentStatus === "paid" ? "default" : "secondary"}
+              className={
+                currentStatus === "paid"
+                  ? "mt-2 bg-green-600 hover:bg-green-700"
+                  : "mt-2 bg-orange-500 hover:bg-orange-600"
+              }
+            >
+              {currentStatus === "paid" ? "PAID" : "DUE"}
             </Badge>
           </div>
         </div>

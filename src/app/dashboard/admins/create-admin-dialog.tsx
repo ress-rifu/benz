@@ -23,6 +23,7 @@ import { createAdmin } from "./actions";
 import { useTransition } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/lib/language/language-context";
 
 interface CreateAdminFormData {
   name: string;
@@ -39,6 +40,7 @@ interface CreateAdminDialogProps {
 
 export function CreateAdminDialog({ open, onOpenChange }: CreateAdminDialogProps) {
   const [isPending, startTransition] = useTransition();
+  const { t } = useLanguage();
 
   const {
     register,
@@ -62,14 +64,14 @@ export function CreateAdminDialog({ open, onOpenChange }: CreateAdminDialogProps
 
       if (result?.error) {
         toast({
-          title: "Error",
+          title: t("forms.error"),
           description: result.error,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Success",
-          description: "Admin user created successfully",
+          title: t("forms.success"),
+          description: t("forms.adminCreated"),
         });
         reset();
         onOpenChange(false);
@@ -81,19 +83,19 @@ export function CreateAdminDialog({ open, onOpenChange }: CreateAdminDialogProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Admin</DialogTitle>
+          <DialogTitle>{t("forms.addAdmin")}</DialogTitle>
           <DialogDescription>
-            Create a new admin user account. They will be able to log in immediately.
+            {t("forms.addAdmin")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name *</Label>
+            <Label htmlFor="name">{t("forms.fullName")} *</Label>
             <Input
               id="name"
               type="text"
-              placeholder="John Doe"
+              placeholder={t("forms.enterName")}
               {...register("name", {
                 required: "Name is required",
                 minLength: {
@@ -108,11 +110,11 @@ export function CreateAdminDialog({ open, onOpenChange }: CreateAdminDialogProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username">Username *</Label>
+            <Label htmlFor="username">{t("forms.username")} *</Label>
             <Input
               id="username"
               type="text"
-              placeholder="johndoe"
+              placeholder={t("forms.enterUsername")}
               {...register("username", {
                 required: "Username is required",
                 minLength: {
@@ -131,11 +133,11 @@ export function CreateAdminDialog({ open, onOpenChange }: CreateAdminDialogProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{t("forms.email")} *</Label>
             <Input
               id="email"
               type="email"
-              placeholder="admin@example.com"
+              placeholder={t("forms.enterEmail")}
               {...register("email", {
                 required: "Email is required",
                 pattern: {
@@ -150,11 +152,11 @@ export function CreateAdminDialog({ open, onOpenChange }: CreateAdminDialogProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password *</Label>
+            <Label htmlFor="password">{t("forms.password")} *</Label>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={t("forms.enterPassword")}
               {...register("password", {
                 required: "Password is required",
                 minLength: {
@@ -169,19 +171,19 @@ export function CreateAdminDialog({ open, onOpenChange }: CreateAdminDialogProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="role">Role *</Label>
+            <Label htmlFor="role">{t("forms.role")} *</Label>
             <Controller
               name="role"
               control={control}
-              rules={{ required: "Role is required" }}
+              rules={{ required: t("forms.required") }}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a role" />
+                    <SelectValue placeholder={t("forms.role")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                    <SelectItem value="admin">{t("admins.admin")}</SelectItem>
+                    <SelectItem value="super_admin">{t("admins.superAdmin")}</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -198,11 +200,11 @@ export function CreateAdminDialog({ open, onOpenChange }: CreateAdminDialogProps
               className="w-full sm:w-auto"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Admin
+              {isPending ? t("forms.saving") : t("forms.addAdmin")}
             </Button>
           </DialogFooter>
         </form>

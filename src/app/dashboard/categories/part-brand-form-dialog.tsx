@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "@/lib/language/language-context";
 import {
     Dialog,
     DialogContent,
@@ -54,6 +55,7 @@ export function PartBrandFormDialog({
     brand,
     categories,
 }: PartBrandFormDialogProps) {
+    const { t } = useLanguage();
     const [isPending, startTransition] = useTransition();
     const isEditing = !!brand;
 
@@ -114,16 +116,16 @@ export function PartBrandFormDialog({
 
             if (result?.error) {
                 toast({
-                    title: "Error",
+                    title: t("forms.error"),
                     description: result.error,
                     variant: "destructive",
                 });
             } else {
                 toast({
-                    title: "Success",
+                    title: t("forms.success"),
                     description: isEditing
-                        ? "Brand updated successfully"
-                        : "Brand created successfully",
+                        ? t("forms.brandUpdated")
+                        : t("forms.brandCreated"),
                 });
                 onOpenChange(false);
             }
@@ -138,18 +140,18 @@ export function PartBrandFormDialog({
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>
-                        {isEditing ? "Edit Brand" : "Add Brand"}
+                        {isEditing ? t("forms.editBrand") : t("forms.addBrand")}
                     </DialogTitle>
                     <DialogDescription>
                         {isEditing
-                            ? "Update the brand details below"
-                            : "Add a new part brand"}
+                            ? t("forms.updateBrandDetails")
+                            : t("forms.addNewBrand")}
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="category_id">Category *</Label>
+                        <Label htmlFor="category_id">{t("forms.category")} *</Label>
                         <Controller
                             name="category_id"
                             control={control}
@@ -157,7 +159,7 @@ export function PartBrandFormDialog({
                             render={({ field }) => (
                                 <Select onValueChange={field.onChange} value={field.value}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select a category" />
+                                        <SelectValue placeholder={t("forms.selectCategory")} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {activeCategories.map((cat) => (
@@ -175,11 +177,11 @@ export function PartBrandFormDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="name">Brand Name *</Label>
+                        <Label htmlFor="name">{t("forms.brandName")} *</Label>
                         <Input
                             id="name"
                             {...register("name", { required: "Name is required" })}
-                            placeholder="e.g., Toyota, Bosch, Denso"
+                            placeholder={t("forms.enterName")}
                         />
                         {errors.name && (
                             <p className="text-sm text-red-500">{errors.name.message}</p>
@@ -187,16 +189,16 @@ export function PartBrandFormDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="country_of_origin">Country of Origin</Label>
+                        <Label htmlFor="country_of_origin">{t("forms.countryOfOrigin")}</Label>
                         <Input
                             id="country_of_origin"
                             {...register("country_of_origin")}
-                            placeholder="e.g., Japan, Germany"
+                            placeholder={t("forms.optional")}
                         />
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="is_active">Active</Label>
+                        <Label htmlFor="is_active">{t("forms.active")}</Label>
                         <Controller
                             name="is_active"
                             control={control}
@@ -217,11 +219,11 @@ export function PartBrandFormDialog({
                             className="w-full sm:w-auto"
                             onClick={() => onOpenChange(false)}
                         >
-                            Cancel
+                            {t("common.cancel")}
                         </Button>
                         <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {isEditing ? "Update" : "Create"}
+                            {isEditing ? t("forms.update") : t("forms.create")}
                         </Button>
                     </DialogFooter>
                 </form>

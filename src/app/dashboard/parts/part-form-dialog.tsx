@@ -30,6 +30,7 @@ import { useTransition, useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import type { Tables } from "@/types/database";
+import { useLanguage } from "@/lib/language/language-context";
 
 interface PartFormDialogProps {
     open: boolean;
@@ -46,6 +47,7 @@ export function PartFormDialog({
     const [categories, setCategories] = useState<Tables<"part_categories">[]>([]);
     const [brands, setBrands] = useState<Tables<"part_brands">[]>([]);
     const isEditing = !!part;
+    const { t } = useLanguage();
 
     const {
         register,
@@ -158,16 +160,16 @@ export function PartFormDialog({
 
             if (result?.error) {
                 toast({
-                    title: "Error",
+                    title: t("forms.error"),
                     description: result.error,
                     variant: "destructive",
                 });
             } else {
                 toast({
-                    title: "Success",
+                    title: t("forms.success"),
                     description: isEditing
-                        ? "Part updated successfully"
-                        : "Part created successfully",
+                        ? t("forms.partUpdated")
+                        : t("forms.partCreated"),
                 });
                 onOpenChange(false);
             }
@@ -179,26 +181,24 @@ export function PartFormDialog({
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>
-                        {isEditing ? "Edit Part" : "Add Part"}
+                        {isEditing ? t("forms.editPart") : t("forms.addPart")}
                     </DialogTitle>
                     <DialogDescription>
-                        {isEditing
-                            ? "Update the part details below"
-                            : "Add a new part to your inventory"}
+                        {isEditing ? t("forms.editPart") : t("forms.addPart")}
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="category_id">Category</Label>
+                            <Label htmlFor="category_id">{t("forms.category")}</Label>
                             <Controller
                                 name="category_id"
                                 control={control}
                                 render={({ field }) => (
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select a category" />
+                                            <SelectValue placeholder={t("forms.selectCategory")} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {categories.map((cat) => (
@@ -216,7 +216,7 @@ export function PartFormDialog({
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="brand_id">Brand (Optional)</Label>
+                            <Label htmlFor="brand_id">{t("forms.brand")} ({t("forms.optional")})</Label>
                             <Controller
                                 name="brand_id"
                                 control={control}
@@ -229,10 +229,10 @@ export function PartFormDialog({
                                         <SelectTrigger>
                                             <SelectValue placeholder={
                                                 !selectedCategoryId 
-                                                    ? "Select a category first" 
+                                                    ? t("forms.selectCategory") 
                                                     : filteredBrands.length === 0 
-                                                        ? "No brands for this category" 
-                                                        : "Select a brand"
+                                                        ? t("forms.selectBrand") 
+                                                        : t("forms.selectBrand")
                                             } />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -255,22 +255,22 @@ export function PartFormDialog({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Name (English)</Label>
-                            <Input id="name" {...register("name")} />
+                            <Label htmlFor="name">{t("forms.partName")}</Label>
+                            <Input id="name" placeholder={t("forms.enterName")} {...register("name")} />
                             {errors.name && (
                                 <p className="text-sm text-red-500">{errors.name.message}</p>
                             )}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="name_bn">Name (Bengali)</Label>
+                            <Label htmlFor="name_bn">{t("forms.partNameBangla")}</Label>
                             <Input id="name_bn" {...register("name_bn")} placeholder="বাংলা নাম" />
                         </div>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="sku">SKU</Label>
+                            <Label htmlFor="sku">{t("forms.sku")}</Label>
                             <Input id="sku" {...register("sku")} placeholder="e.g., PART-001" />
                             {errors.sku && (
                                 <p className="text-sm text-red-500">{errors.sku.message}</p>
@@ -278,14 +278,14 @@ export function PartFormDialog({
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="part_number">OEM Part Number</Label>
-                            <Input id="part_number" {...register("part_number")} placeholder="Optional" />
+                            <Label htmlFor="part_number">{t("forms.partNumber")}</Label>
+                            <Input id="part_number" {...register("part_number")} placeholder={t("forms.optional")} />
                         </div>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-3">
                         <div className="space-y-2">
-                            <Label htmlFor="quantity">Initial Quantity</Label>
+                            <Label htmlFor="quantity">{t("forms.quantity")}</Label>
                             <Input
                                 id="quantity"
                                 type="number"
@@ -297,7 +297,7 @@ export function PartFormDialog({
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="cost_price">Cost Price (৳)</Label>
+                            <Label htmlFor="cost_price">{t("forms.costPrice")} (৳)</Label>
                             <Input
                                 id="cost_price"
                                 type="number"
@@ -310,7 +310,7 @@ export function PartFormDialog({
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="selling_price">Selling Price (৳)</Label>
+                            <Label htmlFor="selling_price">{t("forms.sellingPrice")} (৳)</Label>
                             <Input
                                 id="selling_price"
                                 type="number"
@@ -324,7 +324,7 @@ export function PartFormDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="min_stock_level">Minimum Stock Level (for alerts)</Label>
+                        <Label htmlFor="min_stock_level">{t("forms.minStockLevel")}</Label>
                         <Input
                             id="min_stock_level"
                             type="number"
@@ -334,7 +334,7 @@ export function PartFormDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="description">Description (Optional)</Label>
+                        <Label htmlFor="description">{t("forms.description")} ({t("forms.optional")})</Label>
                         <Textarea id="description" {...register("description")} />
                     </div>
 
@@ -345,11 +345,11 @@ export function PartFormDialog({
                             className="w-full sm:w-auto"
                             onClick={() => onOpenChange(false)}
                         >
-                            Cancel
+                            {t("common.cancel")}
                         </Button>
                         <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {isEditing ? "Update" : "Create"}
+                            {isEditing ? t("forms.update") : t("forms.create")}
                         </Button>
                     </DialogFooter>
                 </form>

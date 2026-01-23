@@ -10,9 +10,11 @@ import { login } from "./actions";
 import { useTransition } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/lib/language/language-context";
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();
+  const { t } = useLanguage();
 
   const {
     register,
@@ -28,7 +30,7 @@ export function LoginForm() {
       if (result?.error) {
         toast({
           title: "Error",
-          description: result.error,
+          description: t("auth.invalidCredentials"),
           variant: "destructive",
         });
       }
@@ -39,7 +41,7 @@ export function LoginForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="identifier" className="text-slate-200">
-          Email or Username
+          {t("auth.email")}
         </Label>
         <Input
           id="identifier"
@@ -55,7 +57,7 @@ export function LoginForm() {
 
       <div className="space-y-2">
         <Label htmlFor="password" className="text-slate-200">
-          Password
+          {t("auth.password")}
         </Label>
         <Input
           id="password"
@@ -75,7 +77,7 @@ export function LoginForm() {
         className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold"
       >
         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Sign In
+        {isPending ? t("auth.loggingIn") : t("auth.loginButton")}
       </Button>
     </form>
   );

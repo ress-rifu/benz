@@ -10,13 +10,53 @@ import {
     type CustomerInput,
 } from "@/lib/validations/customers";
 
-export async function getCustomers() {
+export async function getCustomers(searchQuery?: string) {
     const supabase = await createClient();
-    const { data } = await supabase
+    
+    // Get customers with their invoice totals
+    let query = supabase
         .from("customers")
         .select("*")
         .order("name");
-    return data || [];
+    
+    if (searchQuery) {
+        query = query.or(
+            `name.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`
+        );
+    }
+    
+    const { data: customers } = await query;
+    
+    if (!customers) return [];
+    
+    // Get invoice totals for each customer (only due invoices)
+    const { data: invoices } = await supabase
+        .from("invoices")
+        .select("customer_name, total, status");
+    
+    // Calculate total due per customer
+    const customerFinancials = customers.map(customer => {
+        const customerInvoices = invoices?.filter(
+            inv => inv.customer_name.toLowerCase() === customer.name.toLowerCase()
+        ) || [];
+        
+        const totalDue = customerInvoices
+            .filter(inv => inv.status === "due")
+            .reduce((sum, inv) => sum + Number(inv.total), 0);
+        
+        const totalPaid = customerInvoices
+            .filter(inv => inv.status === "paid")
+            .reduce((sum, inv) => sum + Number(inv.total), 0);
+        
+        return {
+            ...customer,
+            total_due: totalDue,
+            total_paid: totalPaid,
+            has_outstanding: totalDue > 0,
+        };
+    });
+    
+    return customerFinancials;
 }
 
 export async function getActiveCustomers() {

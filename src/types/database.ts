@@ -7,6 +7,7 @@ export type Json =
   | Json[];
 
 export type UserRole = "super_admin" | "admin";
+export type InvoiceStatus = "due" | "paid";
 
 export interface Database {
   public: {
@@ -121,6 +122,7 @@ export interface Database {
           discount_amount: number;
           total: number;
           notes: string | null;
+          status: InvoiceStatus;
           created_by: string;
           billed_by_name: string | null;
           settings_snapshot: Json | null;
@@ -145,13 +147,16 @@ export interface Database {
           discount_amount?: number;
           total: number;
           notes?: string | null;
+          status?: InvoiceStatus;
           created_by: string;
           billed_by_name?: string | null;
           settings_snapshot?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
-        Update: Record<string, never>;
+        Update: {
+          status?: InvoiceStatus;
+        };
         Relationships: [
           {
             foreignKeyName: "invoices_created_by_fkey";

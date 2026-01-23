@@ -14,6 +14,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { RevenueBarChart } from "./components/revenue-charts";
+import { FinanceCards } from "./components/finance-cards";
 
 interface DashboardContentProps {
   isSuperAdmin: boolean;
@@ -23,6 +24,7 @@ interface DashboardSummary {
   lowStockItems: number;
   totalInvoices: number;
   totalRevenue: number;
+  outstandingBalance: number;
   totalCustomers: number;
   totalServices: number;
   totalParts: number;
@@ -35,6 +37,7 @@ interface DashboardSummary {
     invoice_number: string;
     customer_name: string;
     total: number;
+    status: string;
     created_at: string;
   }[];
   weeklyRevenueData: { date: string; revenue: number; invoices: number }[];
@@ -58,49 +61,61 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
       const [
         lowStockPartsResult,
         invoicesResult,
-        revenueResult,
-        weeklyRevenueResult,
-        monthlyRevenueResult,
-        prevMonthRevenueResult,
+        allInvoicesResult,
+        weeklyInvoicesResult,
+        monthlyInvoicesResult,
+        prevMonthInvoicesResult,
         customersResult,
         servicesResult,
         partsResult,
         recentResult,
-        dailyRevenueResult,
+        dailyInvoicesResult,
       ] = await Promise.all([
         // Low stock: parts where quantity is below min_stock_level
         supabase.from("parts").select("id, quantity, min_stock_level").eq("is_active", true),
         supabase.from("invoices").select("*", { count: "exact", head: true }),
-        // All invoices count as revenue (no status filter - invoices are created when paid)
-        supabase.from("invoices").select("total"),
-        supabase.from("invoices").select("total").gte("created_at", startOfWeek.toISOString()),
-        supabase.from("invoices").select("total").gte("created_at", startOfMonth.toISOString()),
-        supabase.from("invoices").select("total")
+        // All invoices with status for revenue and outstanding calculations
+        supabase.from("invoices").select("total, status"),
+        supabase.from("invoices").select("total, status").gte("created_at", startOfWeek.toISOString()),
+        supabase.from("invoices").select("total, status").gte("created_at", startOfMonth.toISOString()),
+        supabase.from("invoices").select("total, status")
           .gte("created_at", startOfPrevMonth.toISOString())
           .lte("created_at", endOfPrevMonth.toISOString()),
         supabase.from("customers").select("*", { count: "exact", head: true }),
         supabase.from("services").select("*", { count: "exact", head: true }),
         supabase.from("parts").select("*", { count: "exact", head: true }),
         supabase.from("invoices")
-          .select("id, invoice_number, customer_name, total, created_at")
+          .select("id, invoice_number, customer_name, total, status, created_at")
           .order("created_at", { ascending: false })
           .limit(5),
         supabase.from("invoices")
-          .select("total, created_at")
+          .select("total, status, created_at")
           .gte("created_at", startOfWeek.toISOString())
           .order("created_at", { ascending: true }),
       ]);
 
-      const totalRevenue = revenueResult.data?.reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
-      const weeklyRevenue = weeklyRevenueResult.data?.reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
-      const monthlyRevenue = monthlyRevenueResult.data?.reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
-      const previousMonthRevenue = prevMonthRevenueResult.data?.reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+      // Calculate revenue from PAID invoices only
+      const totalRevenue = allInvoicesResult.data?.filter(inv => inv.status === "paid")
+        .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+      
+      // Calculate outstanding balance from DUE invoices
+      const outstandingBalance = allInvoicesResult.data?.filter(inv => inv.status === "due")
+        .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+      
+      const weeklyRevenue = weeklyInvoicesResult.data?.filter(inv => inv.status === "paid")
+        .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+      
+      const monthlyRevenue = monthlyInvoicesResult.data?.filter(inv => inv.status === "paid")
+        .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+      
+      const previousMonthRevenue = prevMonthInvoicesResult.data?.filter(inv => inv.status === "paid")
+        .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
 
       const revenueGrowth = previousMonthRevenue > 0
         ? ((monthlyRevenue - previousMonthRevenue) / previousMonthRevenue) * 100
         : 0;
 
-      // Process daily revenue for last 7 days
+      // Process daily revenue for last 7 days (paid invoices only)
       const dailyData: { [key: string]: { revenue: number; invoices: number } } = {};
       for (let i = 6; i >= 0; i--) {
         const d = new Date(now);
@@ -109,12 +124,14 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
         dailyData[key] = { revenue: 0, invoices: 0 };
       }
 
-      dailyRevenueResult.data?.forEach((inv) => {
-        const d = new Date(inv.created_at);
-        const key = d.toLocaleDateString("en-US", { weekday: "short" });
-        if (dailyData[key]) {
-          dailyData[key].revenue += Number(inv.total);
-          dailyData[key].invoices += 1;
+      dailyInvoicesResult.data?.forEach((inv) => {
+        if (inv.status === "paid") {
+          const d = new Date(inv.created_at);
+          const key = d.toLocaleDateString("en-US", { weekday: "short" });
+          if (dailyData[key]) {
+            dailyData[key].revenue += Number(inv.total);
+            dailyData[key].invoices += 1;
+          }
         }
       });
 
@@ -133,6 +150,7 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
         lowStockItems,
         totalInvoices: invoicesResult.count || 0,
         totalRevenue,
+        outstandingBalance,
         totalCustomers: customersResult.count || 0,
         totalServices: servicesResult.count || 0,
         totalParts: partsResult.count || 0,
@@ -155,80 +173,13 @@ export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) 
     <div className="space-y-6">
       {/* Key Metrics - Finance cards only for super admin */}
       {isSuperAdmin && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-700">
-                This Month Revenue
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-800">
-                {formatCurrency(summary.monthlyRevenue)}
-              </div>
-              <div className="flex items-center gap-1 text-xs">
-                {summary.revenueGrowth >= 0 ? (
-                  <>
-                    <TrendingUp className="h-3 w-3 text-green-600" />
-                    <span className="text-green-600">+{summary.revenueGrowth.toFixed(1)}%</span>
-                  </>
-                ) : (
-                  <>
-                    <TrendingDown className="h-3 w-3 text-red-600" />
-                    <span className="text-red-600">{summary.revenueGrowth.toFixed(1)}%</span>
-                  </>
-                )}
-                <span className="text-slate-500">vs last month</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-700">
-                This Week Revenue
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-800">
-                {formatCurrency(summary.weeklyRevenue)}
-              </div>
-              <p className="text-xs text-blue-600">Last 7 days</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-amber-700">
-                Total Revenue
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-amber-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-800">
-                {formatCurrency(summary.totalRevenue)}
-              </div>
-              <p className="text-xs text-amber-600">All time</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-700">
-                Total Invoices
-              </CardTitle>
-              <FileText className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-800">
-                {summary.totalInvoices}
-              </div>
-              <p className="text-xs text-purple-600">All time</p>
-            </CardContent>
-          </Card>
-        </div>
+        <FinanceCards summary={{
+          monthlyRevenue: summary.monthlyRevenue,
+          weeklyRevenue: summary.weeklyRevenue,
+          totalRevenue: summary.totalRevenue,
+          outstandingBalance: summary.outstandingBalance,
+          revenueGrowth: summary.revenueGrowth,
+        }} />
       )}
 
       {/* Secondary Metrics - Visible to all */}
