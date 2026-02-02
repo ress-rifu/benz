@@ -36,14 +36,17 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
+  // IMPORTANT: Do not run any code between createServerClient and getUser()
+  // This is needed to properly refresh the auth session
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLoginPage = request.nextUrl.pathname === "/login";
-  const isRegisterPage = request.nextUrl.pathname === "/register";
-  const isPublicPage = request.nextUrl.pathname === "/";
-  const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard");
+  const pathname = request.nextUrl.pathname;
+  const isLoginPage = pathname === "/login";
+  const isRegisterPage = pathname === "/register";
+  const isPublicPage = pathname === "/";
+  const isDashboardPage = pathname.startsWith("/dashboard");
 
   // Redirect any attempts to access /register to /login (registration is disabled)
   if (isRegisterPage) {
@@ -52,19 +55,16 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Unauthenticated user trying to access dashboard -> redirect to login
   if (!user && isDashboardPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  if (user && isLoginPage) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
-  }
-
-  if (user && isPublicPage) {
+  // Authenticated user on login or public page -> redirect to dashboard
+  // But DON'T redirect if already going to dashboard (prevents loop)
+  if (user && (isLoginPage || isPublicPage)) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);

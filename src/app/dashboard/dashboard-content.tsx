@@ -1,7 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
-import { getOrSet } from "@/lib/redis/cache";
-import { CACHE_KEYS, CACHE_TTL } from "@/lib/redis/client";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   Package,
@@ -44,126 +42,138 @@ interface DashboardSummary {
 }
 
 async function getDashboardSummary(): Promise<DashboardSummary> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  // Date calculations
-  const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - 7);
+    // Date calculations
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - 7);
 
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-  return getOrSet(
-    CACHE_KEYS.DASHBOARD_SUMMARY,
-    async () => {
-      const [
-        lowStockPartsResult,
-        invoicesResult,
-        allInvoicesResult,
-        weeklyInvoicesResult,
-        monthlyInvoicesResult,
-        prevMonthInvoicesResult,
-        customersResult,
-        servicesResult,
-        partsResult,
-        recentResult,
-        dailyInvoicesResult,
-      ] = await Promise.all([
-        // Low stock: parts where quantity is below min_stock_level
-        supabase.from("parts").select("id, quantity, min_stock_level").eq("is_active", true),
-        supabase.from("invoices").select("*", { count: "exact", head: true }),
-        // All invoices with status for revenue and outstanding calculations
-        supabase.from("invoices").select("total, status"),
-        supabase.from("invoices").select("total, status").gte("created_at", startOfWeek.toISOString()),
-        supabase.from("invoices").select("total, status").gte("created_at", startOfMonth.toISOString()),
-        supabase.from("invoices").select("total, status")
-          .gte("created_at", startOfPrevMonth.toISOString())
-          .lte("created_at", endOfPrevMonth.toISOString()),
-        supabase.from("customers").select("*", { count: "exact", head: true }),
-        supabase.from("services").select("*", { count: "exact", head: true }),
-        supabase.from("parts").select("*", { count: "exact", head: true }),
-        supabase.from("invoices")
-          .select("id, invoice_number, customer_name, total, status, created_at")
-          .order("created_at", { ascending: false })
-          .limit(5),
-        supabase.from("invoices")
-          .select("total, status, created_at")
-          .gte("created_at", startOfWeek.toISOString())
-          .order("created_at", { ascending: true }),
-      ]);
+    const [
+      lowStockPartsResult,
+      invoicesResult,
+      allInvoicesResult,
+      weeklyInvoicesResult,
+      monthlyInvoicesResult,
+      prevMonthInvoicesResult,
+      customersResult,
+      servicesResult,
+      partsResult,
+      recentResult,
+      dailyInvoicesResult,
+    ] = await Promise.all([
+      supabase.from("parts").select("id, quantity, min_stock_level").eq("is_active", true),
+      supabase.from("invoices").select("*", { count: "exact", head: true }),
+      supabase.from("invoices").select("total, status"),
+      supabase.from("invoices").select("total, status").gte("created_at", startOfWeek.toISOString()),
+      supabase.from("invoices").select("total, status").gte("created_at", startOfMonth.toISOString()),
+      supabase.from("invoices").select("total, status")
+        .gte("created_at", startOfPrevMonth.toISOString())
+        .lte("created_at", endOfPrevMonth.toISOString()),
+      supabase.from("customers").select("*", { count: "exact", head: true }),
+      supabase.from("services").select("*", { count: "exact", head: true }),
+      supabase.from("parts").select("*", { count: "exact", head: true }),
+      supabase.from("invoices")
+        .select("id, invoice_number, customer_name, total, status, created_at")
+        .order("created_at", { ascending: false })
+        .limit(5),
+      supabase.from("invoices")
+        .select("total, status, created_at")
+        .gte("created_at", startOfWeek.toISOString())
+        .order("created_at", { ascending: true }),
+    ]);
 
-      // Calculate revenue from PAID invoices only
-      const totalRevenue = allInvoicesResult.data?.filter(inv => inv.status === "paid")
-        .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
-      
-      // Calculate outstanding balance from DUE invoices
-      const outstandingBalance = allInvoicesResult.data?.filter(inv => inv.status === "due")
-        .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
-      
-      const weeklyRevenue = weeklyInvoicesResult.data?.filter(inv => inv.status === "paid")
-        .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
-      
-      const monthlyRevenue = monthlyInvoicesResult.data?.filter(inv => inv.status === "paid")
-        .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
-      
-      const previousMonthRevenue = prevMonthInvoicesResult.data?.filter(inv => inv.status === "paid")
-        .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+    // Calculate revenue from PAID invoices only
+    const totalRevenue = allInvoicesResult.data?.filter(inv => inv.status === "paid")
+      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
 
-      const revenueGrowth = previousMonthRevenue > 0
-        ? ((monthlyRevenue - previousMonthRevenue) / previousMonthRevenue) * 100
-        : 0;
+    // Calculate outstanding balance from DUE invoices
+    const outstandingBalance = allInvoicesResult.data?.filter(inv => inv.status === "due")
+      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
 
-      // Process daily revenue for last 7 days (paid invoices only)
-      const dailyData: { [key: string]: { revenue: number; invoices: number } } = {};
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(d.getDate() - i);
+    const weeklyRevenue = weeklyInvoicesResult.data?.filter(inv => inv.status === "paid")
+      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+
+    const monthlyRevenue = monthlyInvoicesResult.data?.filter(inv => inv.status === "paid")
+      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+
+    const previousMonthRevenue = prevMonthInvoicesResult.data?.filter(inv => inv.status === "paid")
+      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+
+    const revenueGrowth = previousMonthRevenue > 0
+      ? ((monthlyRevenue - previousMonthRevenue) / previousMonthRevenue) * 100
+      : 0;
+
+    // Process daily revenue for last 7 days (paid invoices only)
+    const dailyData: { [key: string]: { revenue: number; invoices: number } } = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const key = d.toLocaleDateString("en-US", { weekday: "short" });
+      dailyData[key] = { revenue: 0, invoices: 0 };
+    }
+
+    dailyInvoicesResult.data?.forEach((inv) => {
+      if (inv.status === "paid") {
+        const d = new Date(inv.created_at);
         const key = d.toLocaleDateString("en-US", { weekday: "short" });
-        dailyData[key] = { revenue: 0, invoices: 0 };
-      }
-
-      dailyInvoicesResult.data?.forEach((inv) => {
-        if (inv.status === "paid") {
-          const d = new Date(inv.created_at);
-          const key = d.toLocaleDateString("en-US", { weekday: "short" });
-          if (dailyData[key]) {
-            dailyData[key].revenue += Number(inv.total);
-            dailyData[key].invoices += 1;
-          }
+        if (dailyData[key]) {
+          dailyData[key].revenue += Number(inv.total);
+          dailyData[key].invoices += 1;
         }
-      });
+      }
+    });
 
-      const weeklyRevenueData = Object.entries(dailyData).map(([date, data]) => ({
-        date,
-        revenue: data.revenue,
-        invoices: data.invoices,
-      }));
+    const weeklyRevenueData = Object.entries(dailyData).map(([date, data]) => ({
+      date,
+      revenue: data.revenue,
+      invoices: data.invoices,
+    }));
 
-      // Calculate low stock items: parts where quantity < min_stock_level
-      const lowStockItems = lowStockPartsResult.data?.filter(
-        (part) => part.quantity < (part.min_stock_level || 5)
-      ).length || 0;
+    // Calculate low stock items: parts where quantity < min_stock_level
+    const lowStockItems = lowStockPartsResult.data?.filter(
+      (part) => part.quantity < (part.min_stock_level || 5)
+    ).length || 0;
 
-      return {
-        lowStockItems,
-        totalInvoices: invoicesResult.count || 0,
-        totalRevenue,
-        outstandingBalance,
-        totalCustomers: customersResult.count || 0,
-        totalServices: servicesResult.count || 0,
-        totalParts: partsResult.count || 0,
-        weeklyRevenue,
-        monthlyRevenue,
-        previousMonthRevenue,
-        revenueGrowth,
-        recentInvoices: recentResult.data || [],
-        weeklyRevenueData,
-      };
-    },
-    CACHE_TTL.SHORT
-  );
+    return {
+      lowStockItems,
+      totalInvoices: invoicesResult.count || 0,
+      totalRevenue,
+      outstandingBalance,
+      totalCustomers: customersResult.count || 0,
+      totalServices: servicesResult.count || 0,
+      totalParts: partsResult.count || 0,
+      weeklyRevenue,
+      monthlyRevenue,
+      previousMonthRevenue,
+      revenueGrowth,
+      recentInvoices: recentResult.data || [],
+      weeklyRevenueData,
+    };
+  } catch (error) {
+    console.error("Dashboard summary error:", error);
+    // Return safe defaults on error
+    return {
+      lowStockItems: 0,
+      totalInvoices: 0,
+      totalRevenue: 0,
+      outstandingBalance: 0,
+      totalCustomers: 0,
+      totalServices: 0,
+      totalParts: 0,
+      weeklyRevenue: 0,
+      monthlyRevenue: 0,
+      previousMonthRevenue: 0,
+      revenueGrowth: 0,
+      recentInvoices: [],
+      weeklyRevenueData: [],
+    };
+  }
 }
 
 export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) {

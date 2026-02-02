@@ -4,29 +4,10 @@ const globalForRedis = globalThis as unknown as {
   redis: Redis | undefined;
 };
 
-// Lazy-load Redis - only initialize if REDIS_URL is configured
+// Redis disabled - returns null to skip caching
 function getRedis(): Redis | null {
-  if (!process.env.REDIS_URL) {
-    return null;
-  }
-
-  if (!globalForRedis.redis) {
-    globalForRedis.redis = new Redis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: 3,
-      retryStrategy(times) {
-        if (times > 3) return null;
-        return Math.min(times * 200, 2000);
-      },
-      lazyConnect: true,
-    });
-
-    // Suppress connection errors when Redis is unavailable
-    globalForRedis.redis.on("error", () => {
-      // Silently handle connection errors
-    });
-  }
-
-  return globalForRedis.redis;
+  // Disabled: return null to skip all caching
+  return null;
 }
 
 export const redis = getRedis();

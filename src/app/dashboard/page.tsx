@@ -7,11 +7,11 @@ import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
   const user = await getUser();
-  
+
   if (!user) {
     redirect("/login");
   }
-  
+
   const isSuperAdmin = user.role === "super_admin";
 
   return (
@@ -24,4 +24,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-

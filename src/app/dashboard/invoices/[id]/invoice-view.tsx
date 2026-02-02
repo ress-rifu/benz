@@ -323,6 +323,18 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                 <span className="font-semibold w-32">Status</span>
                 <span>: <span className={currentStatus === "paid" ? "text-green-600" : "text-orange-600"}>{currentStatus === "paid" ? "Paid" : "Due"}</span></span>
               </div>
+              {invoice.driver_name && (
+                <div className="flex">
+                  <span className="font-semibold w-32">Driver Name</span>
+                  <span>: {invoice.driver_name}</span>
+                </div>
+              )}
+              {billedByName && (
+                <div className="flex">
+                  <span className="font-semibold w-32">Billed By</span>
+                  <span>: {billedByName}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -332,13 +344,13 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-100 border-b border-slate-400">
-                    <th className="border-r border-slate-400 px-2 py-1.5 text-left w-12">SL No</th>
-                    <th className="border-r border-slate-400 px-2 py-1.5 text-left">Service Charge</th>
-                    <th className="border-r border-slate-400 px-2 py-1.5 text-center w-16">Qty</th>
+                    <th className="border-r border-slate-400 px-2 py-1 text-left w-12">SL No</th>
+                    <th className="border-r border-slate-400 px-2 py-1 text-left">Service Charge</th>
+                    <th className="border-r border-slate-400 px-2 py-1 text-center w-16">Qty</th>
                     {isSuperAdmin && (
                       <>
-                        <th className="border-r border-slate-400 px-2 py-1.5 text-right w-24">Unit Price</th>
-                        <th className="px-2 py-1.5 text-right w-28">Amount(TK)</th>
+                        <th className="border-r border-slate-400 px-2 py-1 text-right w-24">Unit Price</th>
+                        <th className="px-2 py-1 text-right w-28">Amount(TK)</th>
                       </>
                     )}
                   </tr>
@@ -346,13 +358,13 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                 <tbody>
                   {items.filter(i => i.type === "service").map((item, idx) => (
                     <tr key={item.id} className="border-b border-slate-300">
-                      <td className="border-r border-slate-300 px-2 py-1.5 text-center">{idx + 1}</td>
-                      <td className="border-r border-slate-300 px-2 py-1.5">{item.description}</td>
-                      <td className="border-r border-slate-300 px-2 py-1.5 text-center">{item.quantity}</td>
+                      <td className="border-r border-slate-300 px-2 py-1 text-center">{idx + 1}</td>
+                      <td className="border-r border-slate-300 px-2 py-1">{item.description}</td>
+                      <td className="border-r border-slate-300 px-2 py-1 text-center">{item.quantity}</td>
                       {isSuperAdmin && (
                         <>
-                          <td className="border-r border-slate-300 px-2 py-1.5 text-right">{item.unit_price.toFixed(2)}</td>
-                          <td className="px-2 py-1.5 text-right font-medium">{item.total.toFixed(2)}</td>
+                          <td className="border-r border-slate-300 px-2 py-1 text-right">{item.unit_price.toFixed(2)}</td>
+                          <td className="px-2 py-1 text-right font-medium">{item.total.toFixed(2)}</td>
                         </>
                       )}
                     </tr>
@@ -368,13 +380,13 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-100 border-b border-slate-400">
-                    <th className="border-r border-slate-400 px-2 py-1.5 text-left w-12">SL No</th>
-                    <th className="border-r border-slate-400 px-2 py-1.5 text-left">Item Description</th>
-                    <th className="border-r border-slate-400 px-2 py-1.5 text-center w-16">Qty</th>
+                    <th className="border-r border-slate-400 px-2 py-1 text-left w-12">SL No</th>
+                    <th className="border-r border-slate-400 px-2 py-1 text-left">Item Description</th>
+                    <th className="border-r border-slate-400 px-2 py-1 text-center w-16">Qty</th>
                     {isSuperAdmin && (
                       <>
-                        <th className="border-r border-slate-400 px-2 py-1.5 text-right w-24">Unit Price</th>
-                        <th className="px-2 py-1.5 text-right w-28">Amount(TK)</th>
+                        <th className="border-r border-slate-400 px-2 py-1 text-right w-24">Unit Price</th>
+                        <th className="px-2 py-1 text-right w-28">Amount(TK)</th>
                       </>
                     )}
                   </tr>
@@ -382,8 +394,8 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                 <tbody>
                   {items.filter(i => i.type === "part").map((item, idx) => (
                     <tr key={item.id} className="border-b border-slate-300">
-                      <td className="border-r border-slate-300 px-2 py-1.5 text-center">{idx + 1}</td>
-                      <td className="border-r border-slate-300 px-2 py-1.5">
+                      <td className="border-r border-slate-300 px-2 py-1 text-center">{idx + 1}</td>
+                      <td className="border-r border-slate-300 px-2 py-1">
                         {item.description}
                         {(item.part_model || item.part_serial) && (
                           <span className="text-xs text-slate-500 ml-2">
@@ -391,13 +403,13 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                           </span>
                         )}
                       </td>
-                      <td className="border-r border-slate-300 px-2 py-1.5 text-center">
+                      <td className="border-r border-slate-300 px-2 py-1 text-center">
                         {item.quantity} {item.quantity > 1 ? "pcs" : "pc"}
                       </td>
                       {isSuperAdmin && (
                         <>
-                          <td className="border-r border-slate-300 px-2 py-1.5 text-right">{item.unit_price.toFixed(2)}</td>
-                          <td className="px-2 py-1.5 text-right font-bold text-blue-700">{item.total.toFixed(2)}</td>
+                          <td className="border-r border-slate-300 px-2 py-1 text-right">{item.unit_price.toFixed(2)}</td>
+                          <td className="px-2 py-1 text-right font-bold text-blue-700">{item.total.toFixed(2)}</td>
                         </>
                       )}
                     </tr>

@@ -274,6 +274,15 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                 Record vehicle mileage for oil change tracking
               </p>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="driver_name">Driver Name</Label>
+              <Input
+                id="driver_name"
+                placeholder="Enter driver name"
+                {...register("driver_name")}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>

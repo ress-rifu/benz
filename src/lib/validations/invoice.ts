@@ -21,6 +21,7 @@ export const invoiceSchema = z.object({
   vehicle_vin: z.string().max(50).optional().nullable(),
   vehicle_license_plate: z.string().max(20).optional().nullable(),
   vehicle_mileage: z.number().int().min(0).max(9999999).optional().nullable(),
+  driver_name: z.string().max(255).optional().nullable(),
   tax_rate: z.number().min(0).max(100),
   discount_amount: z.number().min(0),
   notes: z.string().max(2000).optional().nullable(),

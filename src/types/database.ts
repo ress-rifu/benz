@@ -117,6 +117,7 @@ export interface Database {
           vehicle_vin: string | null;
           vehicle_license_plate: string | null;
           vehicle_mileage: number | null;
+          driver_name: string | null;
           subtotal: number;
           tax_rate: number;
           tax_amount: number;
@@ -143,6 +144,7 @@ export interface Database {
           vehicle_vin?: string | null;
           vehicle_license_plate?: string | null;
           vehicle_mileage?: number | null;
+          driver_name?: string | null;
           subtotal: number;
           tax_rate?: number;
           tax_amount?: number;

@@ -101,6 +101,7 @@ export async function createInvoice(input: InvoiceInput) {
         vehicle_vin: data.vehicle_vin || null,
         vehicle_license_plate: data.vehicle_license_plate || null,
         vehicle_mileage: data.vehicle_mileage || null,
+        driver_name: data.driver_name || null,
         subtotal,
         tax_rate: data.tax_rate,
         tax_amount: taxAmount,

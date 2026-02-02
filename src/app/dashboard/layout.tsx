@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div 
+    <div
       id="dashboard-layout"
       className="flex h-screen bg-slate-50 print:block print:h-auto print:bg-white"
     >
@@ -27,4 +27,5 @@ export default async function DashboardLayout({
     </div>
   );
 }
+
 
