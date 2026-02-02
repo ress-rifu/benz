@@ -42,6 +42,14 @@ interface InvoiceSettings {
   show_customer_email: boolean;
   show_customer_phone: boolean;
   show_customer_address: boolean;
+  margin_top: number;
+  margin_right: number;
+  margin_bottom: number;
+  margin_left: number;
+  header_image_url: string | null;
+  show_header_image: boolean;
+  footer_image_url: string | null;
+  show_footer_image: boolean;
 }
 
 const DEFAULT_SETTINGS: InvoiceSettings = {
@@ -58,6 +66,14 @@ const DEFAULT_SETTINGS: InvoiceSettings = {
   show_customer_email: true,
   show_customer_phone: true,
   show_customer_address: true,
+  margin_top: 10,
+  margin_right: 10,
+  margin_bottom: 10,
+  margin_left: 10,
+  header_image_url: null,
+  show_header_image: true,
+  footer_image_url: null,
+  show_footer_image: true,
 };
 
 interface InvoiceModalProps {
@@ -70,7 +86,7 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [currentStatus, setCurrentStatus] = useState(invoice.status);
-  
+
   const settings: InvoiceSettings = invoice.settings_snapshot
     ? (invoice.settings_snapshot as unknown as InvoiceSettings)
     : DEFAULT_SETTINGS;
@@ -80,7 +96,7 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
   const handleStatusChange = () => {
     startTransition(async () => {
       const result = await updateInvoiceStatus(invoice.id, "paid");
-      
+
       if (result?.error) {
         toast({
           title: "Error",
@@ -100,14 +116,14 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
   const handlePrint = () => {
     // Add class to body to enable modal-specific print styles
     document.body.classList.add('printing-modal');
-    
+
     // Handler to remove class after print dialog closes
     const handleAfterPrint = () => {
       document.body.classList.remove('printing-modal');
       window.removeEventListener('afterprint', handleAfterPrint);
     };
     window.addEventListener('afterprint', handleAfterPrint);
-    
+
     // Wait for all images to load before printing
     const images = document.querySelectorAll('img');
     const imagePromises = Array.from(images).map((img) => {
@@ -137,9 +153,9 @@ export function InvoiceModal({ invoice, items, isSuperAdmin }: InvoiceModalProps
           <VisuallyHidden>
             <DialogTitle>Invoice {invoice.invoice_number}</DialogTitle>
           </VisuallyHidden>
-          
+
           {/* Modal Header - Hidden on Print */}
-          <div 
+          <div
             className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-3 py-3 sm:px-6 sm:py-4"
             data-print-hide="true"
           >

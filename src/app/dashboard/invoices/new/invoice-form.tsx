@@ -57,6 +57,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
       vehicle_year: undefined,
       vehicle_vin: "",
       vehicle_license_plate: "",
+      vehicle_mileage: undefined,
       tax_rate: 0,
       discount_amount: 0,
       notes: "",
@@ -258,6 +259,20 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                   {...register("vehicle_license_plate")}
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="vehicle_mileage">Odometer / Distance (km)</Label>
+              <Input
+                id="vehicle_mileage"
+                type="number"
+                min="0"
+                placeholder="e.g., 45000"
+                {...register("vehicle_mileage", { valueAsNumber: true })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Record vehicle mileage for oil change tracking
+              </p>
             </div>
           </CardContent>
         </Card>

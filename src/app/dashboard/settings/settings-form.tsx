@@ -27,7 +27,11 @@ interface SettingsFormProps {
 export function SettingsForm({ settings }: SettingsFormProps) {
   const [isPending, startTransition] = useTransition();
   const [isUploading, startUploadTransition] = useTransition();
+  const [isUploadingHeader, startUploadHeaderTransition] = useTransition();
+  const [isUploadingFooter, startUploadFooterTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const headerImageInputRef = useRef<HTMLInputElement>(null);
+  const footerImageInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -51,10 +55,20 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       show_customer_email: settings.show_customer_email,
       show_customer_phone: settings.show_customer_phone,
       show_customer_address: settings.show_customer_address,
+      margin_top: settings.margin_top ?? 10,
+      margin_right: settings.margin_right ?? 10,
+      margin_bottom: settings.margin_bottom ?? 10,
+      margin_left: settings.margin_left ?? 10,
+      header_image_url: settings.header_image_url,
+      show_header_image: settings.show_header_image ?? true,
+      footer_image_url: settings.footer_image_url,
+      show_footer_image: settings.show_footer_image ?? true,
     },
   });
 
   const logoUrl = watch("logo_url");
+  const headerImageUrl = watch("header_image_url");
+  const footerImageUrl = watch("footer_image_url");
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,6 +91,60 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         toast({
           title: "Success",
           description: "Logo uploaded successfully",
+        });
+      }
+    });
+  };
+
+  const handleHeaderImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", "header");
+
+    startUploadHeaderTransition(async () => {
+      const result = await uploadLogo(formData);
+
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else if (result?.url) {
+        setValue("header_image_url", result.url);
+        toast({
+          title: "Success",
+          description: "Header image uploaded successfully",
+        });
+      }
+    });
+  };
+
+  const handleFooterImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", "footer");
+
+    startUploadFooterTransition(async () => {
+      const result = await uploadLogo(formData);
+
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else if (result?.url) {
+        setValue("footer_image_url", result.url);
+        toast({
+          title: "Success",
+          description: "Footer image uploaded successfully",
         });
       }
     });
@@ -219,6 +287,179 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             <div className="space-y-2">
               <Label htmlFor="footer_text">Footer Text</Label>
               <Textarea id="footer_text" {...register("footer_text")} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* PDF Margins */}
+      <Card>
+        <CardHeader>
+          <CardTitle>PDF Margins</CardTitle>
+          <CardDescription>
+            Adjust print margins (in mm) for invoices
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <Label htmlFor="margin_top">Top</Label>
+              <Input
+                id="margin_top"
+                type="number"
+                min={0}
+                max={50}
+                {...register("margin_top", { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="margin_right">Right</Label>
+              <Input
+                id="margin_right"
+                type="number"
+                min={0}
+                max={50}
+                {...register("margin_right", { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="margin_bottom">Bottom</Label>
+              <Input
+                id="margin_bottom"
+                type="number"
+                min={0}
+                max={50}
+                {...register("margin_bottom", { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="margin_left">Left</Label>
+              <Input
+                id="margin_left"
+                type="number"
+                min={0}
+                max={50}
+                {...register("margin_left", { valueAsNumber: true })}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Header & Footer Images */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Header Image</CardTitle>
+            <CardDescription>Upload a custom header image for invoices</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              {headerImageUrl ? (
+                <div className="relative h-16 w-full max-w-xs overflow-hidden rounded-lg border bg-slate-50">
+                  <Image
+                    src={headerImageUrl}
+                    alt="Header"
+                    fill
+                    className="object-contain p-2"
+                  />
+                </div>
+              ) : (
+                <div className="flex h-16 w-full max-w-xs items-center justify-center rounded-lg border border-dashed bg-slate-50 text-sm text-slate-400">
+                  No header image
+                </div>
+              )}
+              <div>
+                <input
+                  ref={headerImageInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg"
+                  onChange={handleHeaderImageChange}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => headerImageInputRef.current?.click()}
+                  disabled={isUploadingHeader}
+                >
+                  {isUploadingHeader ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                  )}
+                  Upload
+                </Button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="show_header_image" className="cursor-pointer">
+                Show Header Image
+              </Label>
+              <Switch
+                id="show_header_image"
+                checked={watch("show_header_image")}
+                onCheckedChange={(checked) => setValue("show_header_image", checked)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Footer Image</CardTitle>
+            <CardDescription>Upload a custom footer image for invoices</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              {footerImageUrl ? (
+                <div className="relative h-16 w-full max-w-xs overflow-hidden rounded-lg border bg-slate-50">
+                  <Image
+                    src={footerImageUrl}
+                    alt="Footer"
+                    fill
+                    className="object-contain p-2"
+                  />
+                </div>
+              ) : (
+                <div className="flex h-16 w-full max-w-xs items-center justify-center rounded-lg border border-dashed bg-slate-50 text-sm text-slate-400">
+                  No footer image
+                </div>
+              )}
+              <div>
+                <input
+                  ref={footerImageInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg"
+                  onChange={handleFooterImageChange}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => footerImageInputRef.current?.click()}
+                  disabled={isUploadingFooter}
+                >
+                  {isUploadingFooter ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                  )}
+                  Upload
+                </Button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="show_footer_image" className="cursor-pointer">
+                Show Footer Image
+              </Label>
+              <Switch
+                id="show_footer_image"
+                checked={watch("show_footer_image")}
+                onCheckedChange={(checked) => setValue("show_footer_image", checked)}
+              />
             </div>
           </CardContent>
         </Card>

@@ -19,6 +19,14 @@ interface InvoiceSettings {
   show_customer_email: boolean;
   show_customer_phone: boolean;
   show_customer_address: boolean;
+  margin_top: number;
+  margin_right: number;
+  margin_bottom: number;
+  margin_left: number;
+  header_image_url: string | null;
+  show_header_image: boolean;
+  footer_image_url: string | null;
+  show_footer_image: boolean;
 }
 
 const DEFAULT_SETTINGS: InvoiceSettings = {
@@ -35,6 +43,14 @@ const DEFAULT_SETTINGS: InvoiceSettings = {
   show_customer_email: true,
   show_customer_phone: true,
   show_customer_address: true,
+  margin_top: 10,
+  margin_right: 10,
+  margin_bottom: 10,
+  margin_left: 10,
+  header_image_url: null,
+  show_header_image: true,
+  footer_image_url: null,
+  show_footer_image: true,
 };
 
 async function getInvoice(id: string) {

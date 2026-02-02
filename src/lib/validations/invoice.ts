@@ -20,6 +20,7 @@ export const invoiceSchema = z.object({
   vehicle_year: z.number().int().min(1900).max(2100).optional().nullable(),
   vehicle_vin: z.string().max(50).optional().nullable(),
   vehicle_license_plate: z.string().max(20).optional().nullable(),
+  vehicle_mileage: z.number().int().min(0).max(9999999).optional().nullable(),
   tax_rate: z.number().min(0).max(100),
   discount_amount: z.number().min(0),
   notes: z.string().max(2000).optional().nullable(),
@@ -41,6 +42,14 @@ export const invoiceSettingsSchema = z.object({
   show_customer_email: z.boolean(),
   show_customer_phone: z.boolean(),
   show_customer_address: z.boolean(),
+  margin_top: z.number().int().min(0).max(50),
+  margin_right: z.number().int().min(0).max(50),
+  margin_bottom: z.number().int().min(0).max(50),
+  margin_left: z.number().int().min(0).max(50),
+  header_image_url: z.string().url().optional().nullable(),
+  show_header_image: z.boolean(),
+  footer_image_url: z.string().url().optional().nullable(),
+  show_footer_image: z.boolean(),
 });
 
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;

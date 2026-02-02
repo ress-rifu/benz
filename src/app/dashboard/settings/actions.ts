@@ -40,6 +40,14 @@ export async function updateInvoiceSettings(
         show_customer_email: parsed.data.show_customer_email,
         show_customer_phone: parsed.data.show_customer_phone,
         show_customer_address: parsed.data.show_customer_address,
+        margin_top: parsed.data.margin_top,
+        margin_right: parsed.data.margin_right,
+        margin_bottom: parsed.data.margin_bottom,
+        margin_left: parsed.data.margin_left,
+        header_image_url: parsed.data.header_image_url,
+        show_header_image: parsed.data.show_header_image,
+        footer_image_url: parsed.data.footer_image_url,
+        show_footer_image: parsed.data.show_footer_image,
       })
       .eq("id", id);
 
