@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { invoiceSchema, type InvoiceInput } from "@/lib/validations/invoice";
 import { createInvoice } from "./actions";
 import { useState, useTransition } from "react";
@@ -36,7 +37,34 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
   const [isPending, startTransition] = useTransition();
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [customerList, setCustomerList] = useState(customers);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
   const router = useRouter();
+
+  // Build options for searchable selects
+  const customerOptions = customerList.map((customer) => ({
+    value: customer.id,
+    label: `${customer.name}${customer.phone ? ` (${customer.phone})` : ""}`,
+  }));
+
+  const partOptions = parts.map((part) => ({
+    value: part.id,
+    label: `${part.name} (${part.quantity} in stock) - ${formatCurrency(part.selling_price)}`,
+  }));
+
+  const partOptionsMobile = parts.map((part) => ({
+    value: part.id,
+    label: `${part.name} (${part.quantity})`,
+  }));
+
+  const serviceOptions = services.map((service) => ({
+    value: service.id,
+    label: `${service.name} (${service.category_name}) - ${formatCurrency(service.price)}`,
+  }));
+
+  const serviceOptionsMobile = services.map((service) => ({
+    value: service.id,
+    label: service.name,
+  }));
 
   const {
     register,
@@ -142,8 +170,11 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Select Existing Customer</Label>
-              <Select
+              <SearchableSelect
+                options={customerOptions}
+                value={selectedCustomerId}
                 onValueChange={(customerId) => {
+                  setSelectedCustomerId(customerId);
                   const customer = customerList.find((c) => c.id === customerId);
                   if (customer) {
                     setValue("customer_name", customer.name);
@@ -152,24 +183,10 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                     setValue("customer_address", customer.address || "");
                   }
                 }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={customerList.length > 0 ? "Choose a customer..." : "No customers yet - create one first"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {customerList.length > 0 ? (
-                    customerList.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id}>
-                        {customer.name} {customer.phone && `(${customer.phone})`}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <div className="px-2 py-4 text-center text-sm text-slate-500">
-                      No customers found. Click &quot;New Customer&quot; to add one.
-                    </div>
-                  )}
-                </SelectContent>
-              </Select>
+                placeholder={customerList.length > 0 ? "Choose a customer..." : "No customers yet - create one first"}
+                searchPlaceholder="Search customers..."
+                emptyMessage="No customers found."
+              />
             </div>
 
             <Separator />
@@ -384,31 +401,23 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                   <div>
                     <Label className="text-xs">Description</Label>
                     {itemType === "part" ? (
-                      <Select onValueChange={(value) => handlePartSelect(index, value)}>
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Select a part" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {parts.map((part) => (
-                            <SelectItem key={part.id} value={part.id}>
-                              {part.name} ({part.quantity})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SearchableSelect
+                        options={partOptionsMobile}
+                        onValueChange={(value) => handlePartSelect(index, value)}
+                        placeholder="Select a part"
+                        searchPlaceholder="Search parts..."
+                        emptyMessage="No parts found."
+                        triggerClassName="h-9"
+                      />
                     ) : (
-                      <Select onValueChange={(value) => handleServiceSelect(index, value)}>
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Select a service" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {services.map((service) => (
-                            <SelectItem key={service.id} value={service.id}>
-                              {service.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SearchableSelect
+                        options={serviceOptionsMobile}
+                        onValueChange={(value) => handleServiceSelect(index, value)}
+                        placeholder="Select a service"
+                        searchPlaceholder="Search services..."
+                        emptyMessage="No services found."
+                        triggerClassName="h-9"
+                      />
                     )}
                   </div>
 
@@ -490,35 +499,21 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                   <div className={itemType === "part" ? "sm:col-span-3" : "sm:col-span-5"}>
                     <Label>Description</Label>
                     {itemType === "part" ? (
-                      <Select
+                      <SearchableSelect
+                        options={partOptions}
                         onValueChange={(value) => handlePartSelect(index, value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a part" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {parts.map((part) => (
-                            <SelectItem key={part.id} value={part.id}>
-                              {part.name} ({part.quantity} in stock) - {formatCurrency(part.selling_price)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        placeholder="Select a part"
+                        searchPlaceholder="Search parts..."
+                        emptyMessage="No parts found."
+                      />
                     ) : (
-                      <Select
+                      <SearchableSelect
+                        options={serviceOptions}
                         onValueChange={(value) => handleServiceSelect(index, value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a service" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {services.map((service) => (
-                            <SelectItem key={service.id} value={service.id}>
-                              {service.name} ({service.category_name}) - {formatCurrency(service.price)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        placeholder="Select a service"
+                        searchPlaceholder="Search services..."
+                        emptyMessage="No services found."
+                      />
                     )}
                   </div>
 
