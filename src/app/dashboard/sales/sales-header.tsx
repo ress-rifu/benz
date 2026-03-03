@@ -68,6 +68,12 @@ export function SalesHeader({ currentFilter, onFilterChange }: SalesHeaderProps)
         >
           {t("sales.filterMonth")}
         </Button>
+        <Button
+          variant={currentFilter === "all" ? "default" : "outline"}
+          onClick={() => onFilterChange("all")}
+        >
+          All Time
+        </Button>
 
         <Dialog open={isCustomDialogOpen} onOpenChange={setIsCustomDialogOpen}>
           <DialogTrigger asChild>

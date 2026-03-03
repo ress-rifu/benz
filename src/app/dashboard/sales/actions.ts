@@ -3,16 +3,25 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
 
-export type TimeFilter = "today" | "week" | "month" | "custom";
+export type TimeFilter = "today" | "week" | "month" | "all" | "custom";
 
 export interface DateRange {
   from: string;
   to: string;
 }
 
+export interface ItemFilter {
+  partId?: string;
+  serviceName?: string;
+}
+
 export interface SalesData {
   invoices: (Omit<Tables<"invoices">, "status"> & { status: "Paid" | "Due" })[];
   totalRevenue: number;
+  /** Revenue from only the filtered item lines (set when partId or serviceName filter is active) */
+  filteredItemRevenue: number | null;
+  /** Total quantity sold for the filtered item */
+  filteredItemQuantity: number | null;
 }
 
 /**
@@ -50,6 +59,12 @@ function getDateRange(filter: TimeFilter, customRange?: DateRange): DateRange {
       };
     }
 
+    case "all":
+      return {
+        from: new Date("2000-01-01").toISOString(),
+        to: new Date("2099-12-31").toISOString(),
+      };
+
     case "custom":
       if (!customRange) {
         throw new Error("Custom range requires from and to dates");
@@ -62,16 +77,69 @@ function getDateRange(filter: TimeFilter, customRange?: DateRange): DateRange {
 }
 
 /**
- * Fetch sales data (invoices) with time-based filtering
- * Only includes PAID invoices in revenue calculations
+ * Fetch sales data (invoices) with time-based filtering and optional part/service filtering.
+ * Only includes PAID invoices in revenue calculations.
  */
 export async function getSalesData(
   filter: TimeFilter,
   customRange?: DateRange,
-  searchQuery?: string
+  searchQuery?: string,
+  itemFilter?: ItemFilter
 ): Promise<SalesData> {
   const supabase = await createClient();
   const dateRange = getDateRange(filter, customRange);
+
+  // If filtering by a specific part or service, first find matching invoice IDs
+  let filteredInvoiceIds: string[] | null = null;
+  let filteredItemRevenue: number | null = null;
+  let filteredItemQuantity: number | null = null;
+
+  if (itemFilter?.partId || itemFilter?.serviceName) {
+    // First get all invoice IDs in the date range
+    const { data: dateInvoices } = await supabase
+      .from("invoices")
+      .select("id")
+      .gte("created_at", dateRange.from)
+      .lt("created_at", dateRange.to);
+
+    const dateInvoiceIds = (dateInvoices || []).map((inv) => inv.id);
+
+    if (dateInvoiceIds.length > 0) {
+      // Query invoice_items for matching items within those invoices
+      let itemQuery = supabase
+        .from("invoice_items")
+        .select("invoice_id, total, quantity")
+        .in("invoice_id", dateInvoiceIds);
+
+      if (itemFilter.partId) {
+        itemQuery = itemQuery.eq("part_id", itemFilter.partId);
+      } else if (itemFilter.serviceName) {
+        itemQuery = itemQuery
+          .eq("type", "service")
+          .eq("description", itemFilter.serviceName);
+      }
+
+      const { data: matchingItems } = await itemQuery;
+
+      // Get unique invoice IDs and calculate filtered item revenue
+      const uniqueIds = new Set<string>();
+      let itemRevenue = 0;
+      let itemQuantity = 0;
+      (matchingItems || []).forEach((item) => {
+        uniqueIds.add(item.invoice_id);
+        itemRevenue += Number(item.total);
+        itemQuantity += Number(item.quantity);
+      });
+
+      filteredInvoiceIds = Array.from(uniqueIds);
+      filteredItemRevenue = itemRevenue;
+      filteredItemQuantity = itemQuantity;
+    } else {
+      filteredInvoiceIds = [];
+      filteredItemRevenue = 0;
+      filteredItemQuantity = 0;
+    }
+  }
 
   // Fetch all invoices within the date range (both paid and due for display)
   let query = supabase
@@ -85,6 +153,20 @@ export async function getSalesData(
     query = query.or(
       `invoice_number.ilike.%${searchQuery}%,customer_name.ilike.%${searchQuery}%`
     );
+  }
+
+  // Apply item filter — only show invoices containing the selected part/service
+  if (filteredInvoiceIds !== null) {
+    if (filteredInvoiceIds.length === 0) {
+      // No matching invoices
+      return {
+        invoices: [],
+        totalRevenue: 0,
+        filteredItemRevenue: 0,
+        filteredItemQuantity: 0,
+      };
+    }
+    query = query.in("id", filteredInvoiceIds);
   }
 
   const { data: allInvoices, error } = await query;
@@ -108,6 +190,8 @@ export async function getSalesData(
   return {
     invoices: invoicesWithStatus,
     totalRevenue,
+    filteredItemRevenue,
+    filteredItemQuantity,
   };
 }
 

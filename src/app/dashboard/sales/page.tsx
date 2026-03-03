@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { getSalesData } from "./actions";
 import { SalesContent } from "./sales-content";
+import { createClient } from "@/lib/supabase/server";
 
 interface PageProps {
   searchParams: Promise<{ filter?: string; q?: string }>;
@@ -15,14 +16,25 @@ export default async function SalesPage({ searchParams }: PageProps) {
     redirect("/login");
   }
 
-  const { filter = "month", q } = await searchParams;
+  const { filter: rawFilter = "month", q } = await searchParams;
 
-  // Default to showing this month's data
-  const initialData = await getSalesData(
-    filter as "today" | "week" | "month" | "custom",
-    undefined,
-    q
-  );
+  // Fall back to "month" if custom filter is set without date range in URL
+  const filter = rawFilter === "custom" ? "month" : rawFilter;
+
+  // Fetch initial data and parts/services lists in parallel
+  const supabase = await createClient();
+  const [initialData, partsResult, servicesResult] = await Promise.all([
+    getSalesData(
+      filter as "today" | "week" | "month" | "all" | "custom",
+      undefined,
+      q
+    ),
+    supabase.from("parts").select("id, name").eq("is_active", true).order("name"),
+    supabase.from("services").select("id, name").eq("is_active", true).order("name"),
+  ]);
+
+  const parts = partsResult.data || [];
+  const services = servicesResult.data || [];
 
   return (
     <Suspense
@@ -32,7 +44,13 @@ export default async function SalesPage({ searchParams }: PageProps) {
         </div>
       }
     >
-      <SalesContent initialData={initialData} initialFilter={filter as "today" | "week" | "month" | "custom"} initialSearch={q} />
+      <SalesContent
+        initialData={initialData}
+        initialFilter={filter as "today" | "week" | "month" | "all" | "custom"}
+        initialSearch={q}
+        parts={parts}
+        services={services}
+      />
     </Suspense>
   );
 }
