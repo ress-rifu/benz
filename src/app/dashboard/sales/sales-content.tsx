@@ -11,7 +11,7 @@ import type { TimeFilter, DateRange, SalesData, ItemFilter } from "./actions";
 import { getSalesData } from "./actions";
 import { useSearchParams } from "next/navigation";
 import { useLanguage } from "@/lib/language/language-context";
-import { SearchableSelect } from "@/components/ui/searchable-select";
+import { MultiSearchableSelect } from "@/components/ui/multi-searchable-select";
 
 interface SalesContentProps {
   initialData: SalesData;
@@ -31,8 +31,8 @@ export function SalesContent({
   const [salesData, setSalesData] = useState<SalesData>(initialData);
   const [currentFilter, setCurrentFilter] = useState<TimeFilter>(initialFilter);
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
-  const [selectedPartId, setSelectedPartId] = useState<string>("");
-  const [selectedServiceName, setSelectedServiceName] = useState<string>("");
+  const [selectedPartIds, setSelectedPartIds] = useState<string[]>([]);
+  const [selectedServiceNames, setSelectedServiceNames] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q") || "";
@@ -48,13 +48,13 @@ export function SalesContent({
     [services]
   );
 
-  const hasItemFilter = selectedPartId || selectedServiceName;
+  const hasItemFilter = selectedPartIds.length > 0 || selectedServiceNames.length > 0;
 
   // Build the item filter object
   const itemFilter: ItemFilter | undefined = hasItemFilter
     ? {
-      partId: selectedPartId || undefined,
-      serviceName: selectedServiceName || undefined,
+      partIds: selectedPartIds.length > 0 ? selectedPartIds : undefined,
+      serviceNames: selectedServiceNames.length > 0 ? selectedServiceNames : undefined,
     }
     : undefined;
 
@@ -65,7 +65,7 @@ export function SalesContent({
       setSalesData(data);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, currentFilter, customDateRange, selectedPartId, selectedServiceName]);
+  }, [searchQuery, currentFilter, customDateRange, selectedPartIds, selectedServiceNames]);
 
   const handleFilterChange = (filter: TimeFilter, customRange?: DateRange) => {
     setCurrentFilter(filter);
@@ -76,25 +76,21 @@ export function SalesContent({
     });
   };
 
-  const handlePartSelect = (partId: string) => {
-    setSelectedPartId(partId);
-    setSelectedServiceName(""); // Clear other filter
-  };
-
-  const handleServiceSelect = (serviceName: string) => {
-    setSelectedServiceName(serviceName);
-    setSelectedPartId(""); // Clear other filter
-  };
-
   const clearItemFilters = () => {
-    setSelectedPartId("");
-    setSelectedServiceName("");
+    setSelectedPartIds([]);
+    setSelectedServiceNames([]);
   };
 
   const averageInvoiceValue =
     salesData.invoices.length > 0
       ? salesData.totalRevenue / salesData.invoices.length
       : 0;
+
+  // Label for the filtered revenue card
+  const filterLabel = [
+    selectedPartIds.length > 0 ? `${selectedPartIds.length} Part${selectedPartIds.length > 1 ? "s" : ""}` : "",
+    selectedServiceNames.length > 0 ? `${selectedServiceNames.length} Service${selectedServiceNames.length > 1 ? "s" : ""}` : "",
+  ].filter(Boolean).join(" & ");
 
   return (
     <div className="space-y-6">
@@ -109,12 +105,12 @@ export function SalesContent({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="flex-1 space-y-1.5">
           <label className="text-sm font-medium text-muted-foreground">
-            Filter by Part
+            Filter by Parts
           </label>
-          <SearchableSelect
+          <MultiSearchableSelect
             options={partOptions}
-            value={selectedPartId}
-            onValueChange={handlePartSelect}
+            values={selectedPartIds}
+            onValuesChange={setSelectedPartIds}
             placeholder="All Parts"
             searchPlaceholder="Search parts..."
             emptyMessage="No parts found."
@@ -122,12 +118,12 @@ export function SalesContent({
         </div>
         <div className="flex-1 space-y-1.5">
           <label className="text-sm font-medium text-muted-foreground">
-            Filter by Service
+            Filter by Services
           </label>
-          <SearchableSelect
+          <MultiSearchableSelect
             options={serviceOptions}
-            value={selectedServiceName}
-            onValueChange={handleServiceSelect}
+            values={selectedServiceNames}
+            onValuesChange={setSelectedServiceNames}
             placeholder="All Services"
             searchPlaceholder="Search services..."
             emptyMessage="No services found."
@@ -141,7 +137,7 @@ export function SalesContent({
             className="gap-1.5 shrink-0"
           >
             <X className="h-4 w-4" />
-            Clear Filter
+            Clear Filters
           </Button>
         )}
       </div>
@@ -157,7 +153,7 @@ export function SalesContent({
               ${salesData.totalRevenue.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {isPending ? t("common.loading") : hasItemFilter ? "Invoices containing this item" : t("sales.forPeriod")}
+              {isPending ? t("common.loading") : hasItemFilter ? "Invoices containing selected items" : t("sales.forPeriod")}
             </p>
           </CardContent>
         </Card>
@@ -167,12 +163,14 @@ export function SalesContent({
           <Card className="border-blue-200 bg-blue-50/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-blue-700">
-                {selectedPartId ? "Part Revenue" : "Service Revenue"}
+                {filterLabel} Revenue
               </CardTitle>
-              {selectedPartId ? (
+              {selectedPartIds.length > 0 && selectedServiceNames.length === 0 ? (
                 <Package className="h-4 w-4 text-blue-500" />
-              ) : (
+              ) : selectedServiceNames.length > 0 && selectedPartIds.length === 0 ? (
                 <Wrench className="h-4 w-4 text-blue-500" />
+              ) : (
+                <DollarSign className="h-4 w-4 text-blue-500" />
               )}
             </CardHeader>
             <CardContent>

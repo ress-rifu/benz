@@ -11,16 +11,16 @@ export interface DateRange {
 }
 
 export interface ItemFilter {
-  partId?: string;
-  serviceName?: string;
+  partIds?: string[];
+  serviceNames?: string[];
 }
 
 export interface SalesData {
   invoices: (Omit<Tables<"invoices">, "status"> & { status: "Paid" | "Due" })[];
   totalRevenue: number;
-  /** Revenue from only the filtered item lines (set when partId or serviceName filter is active) */
+  /** Revenue from only the filtered item lines (set when part/service filters are active) */
   filteredItemRevenue: number | null;
-  /** Total quantity sold for the filtered item */
+  /** Total quantity sold for the filtered items */
   filteredItemQuantity: number | null;
 }
 
@@ -89,12 +89,16 @@ export async function getSalesData(
   const supabase = await createClient();
   const dateRange = getDateRange(filter, customRange);
 
-  // If filtering by a specific part or service, first find matching invoice IDs
+  const hasPartFilter = itemFilter?.partIds && itemFilter.partIds.length > 0;
+  const hasServiceFilter = itemFilter?.serviceNames && itemFilter.serviceNames.length > 0;
+  const hasItemFilter = hasPartFilter || hasServiceFilter;
+
+  // If filtering by parts or services, find matching invoice IDs
   let filteredInvoiceIds: string[] | null = null;
   let filteredItemRevenue: number | null = null;
   let filteredItemQuantity: number | null = null;
 
-  if (itemFilter?.partId || itemFilter?.serviceName) {
+  if (hasItemFilter) {
     // First get all invoice IDs in the date range
     const { data: dateInvoices } = await supabase
       .from("invoices")
@@ -105,27 +109,33 @@ export async function getSalesData(
     const dateInvoiceIds = (dateInvoices || []).map((inv) => inv.id);
 
     if (dateInvoiceIds.length > 0) {
-      // Query invoice_items for matching items within those invoices
-      let itemQuery = supabase
-        .from("invoice_items")
-        .select("invoice_id, total, quantity")
-        .in("invoice_id", dateInvoiceIds);
+      // Build queries for parts and services separately, then merge results
+      const allMatchingItems: { invoice_id: string; total: number; quantity: number }[] = [];
 
-      if (itemFilter.partId) {
-        itemQuery = itemQuery.eq("part_id", itemFilter.partId);
-      } else if (itemFilter.serviceName) {
-        itemQuery = itemQuery
-          .eq("type", "service")
-          .eq("description", itemFilter.serviceName);
+      if (hasPartFilter) {
+        const { data: partItems } = await supabase
+          .from("invoice_items")
+          .select("invoice_id, total, quantity")
+          .in("invoice_id", dateInvoiceIds)
+          .in("part_id", itemFilter!.partIds!);
+        if (partItems) allMatchingItems.push(...partItems);
       }
 
-      const { data: matchingItems } = await itemQuery;
+      if (hasServiceFilter) {
+        const { data: serviceItems } = await supabase
+          .from("invoice_items")
+          .select("invoice_id, total, quantity")
+          .in("invoice_id", dateInvoiceIds)
+          .eq("type", "service")
+          .in("description", itemFilter!.serviceNames!);
+        if (serviceItems) allMatchingItems.push(...serviceItems);
+      }
 
       // Get unique invoice IDs and calculate filtered item revenue
       const uniqueIds = new Set<string>();
       let itemRevenue = 0;
       let itemQuantity = 0;
-      (matchingItems || []).forEach((item) => {
+      allMatchingItems.forEach((item) => {
         uniqueIds.add(item.invoice_id);
         itemRevenue += Number(item.total);
         itemQuantity += Number(item.quantity);
