@@ -38,6 +38,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [customerList, setCustomerList] = useState(customers);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
+  const [selectedItemIds, setSelectedItemIds] = useState<Record<number, string>>({});
   const router = useRouter();
 
   // Build options for searchable selects
@@ -116,6 +117,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
       setValue(`items.${index}.part_id`, part.id);
       setValue(`items.${index}.description`, part.name);
       setValue(`items.${index}.unit_price`, part.selling_price);
+      setSelectedItemIds((prev) => ({ ...prev, [index]: partId }));
     }
   };
 
@@ -125,6 +127,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
       setValue(`items.${index}.description`, service.name);
       setValue(`items.${index}.unit_price`, service.price);
       setValue(`items.${index}.quantity`, 1); // Services always have quantity 1
+      setSelectedItemIds((prev) => ({ ...prev, [index]: serviceId }));
     }
   };
 
@@ -369,6 +372,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                         value={itemType}
                         onValueChange={(value: "part" | "service") => {
                           setValue(`items.${index}.type`, value);
+                          setSelectedItemIds((prev) => ({ ...prev, [index]: "" }));
                           if (value === "service") {
                             setValue(`items.${index}.quantity`, 1);
                             setValue(`items.${index}.part_model`, "");
@@ -403,6 +407,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                     {itemType === "part" ? (
                       <SearchableSelect
                         options={partOptionsMobile}
+                        value={selectedItemIds[index] || ""}
                         onValueChange={(value) => handlePartSelect(index, value)}
                         placeholder="Select a part"
                         searchPlaceholder="Search parts..."
@@ -412,6 +417,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                     ) : (
                       <SearchableSelect
                         options={serviceOptionsMobile}
+                        value={selectedItemIds[index] || ""}
                         onValueChange={(value) => handleServiceSelect(index, value)}
                         placeholder="Select a service"
                         searchPlaceholder="Search services..."
@@ -479,6 +485,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                       value={itemType}
                       onValueChange={(value: "part" | "service") => {
                         setValue(`items.${index}.type`, value);
+                        setSelectedItemIds((prev) => ({ ...prev, [index]: "" }));
                         if (value === "service") {
                           setValue(`items.${index}.quantity`, 1);
                           setValue(`items.${index}.part_model`, "");
@@ -501,6 +508,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                     {itemType === "part" ? (
                       <SearchableSelect
                         options={partOptions}
+                        value={selectedItemIds[index] || ""}
                         onValueChange={(value) => handlePartSelect(index, value)}
                         placeholder="Select a part"
                         searchPlaceholder="Search parts..."
@@ -509,6 +517,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                     ) : (
                       <SearchableSelect
                         options={serviceOptions}
+                        value={selectedItemIds[index] || ""}
                         onValueChange={(value) => handleServiceSelect(index, value)}
                         placeholder="Select a service"
                         searchPlaceholder="Search services..."

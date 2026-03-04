@@ -263,7 +263,7 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
         )}
 
         {/* Invoice Content */}
-        <div className="p-4 space-y-4">
+        <div data-invoice-content="true" className="p-4 space-y-4">
           {/* Invoice No & Date Row */}
           <div className="border border-slate-300 flex">
             <div className="flex-1 px-3 py-2 border-r border-slate-300">
@@ -484,7 +484,7 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
           {/* Signature Section */}
           <div
             data-invoice-signature="true"
-            className="grid grid-cols-3 gap-8 pt-16 mt-8"
+            className="grid grid-cols-3 gap-8 pt-16 mt-8 print:pt-4 print:mt-2 print:gap-4"
           >
             <div className="text-center">
               <div className="border-t border-slate-900 pt-2">
