@@ -7,7 +7,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Tables } from "@/types/database";
 import { ArrowLeft, Printer, CheckCircle } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
 import { useState, useTransition } from "react";
 import { updateInvoiceStatus } from "./actions";
 import { toast } from "@/hooks/use-toast";
@@ -213,13 +213,10 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
         {settings.show_header_image && settings.header_image_url ? (
           /* Full-width header image - no margins, stuck to edges */
           <div className="w-full">
-            <Image
+            <img
               src={settings.header_image_url}
               alt="Invoice Header"
-              width={1000}
-              height={200}
-              className="w-full h-auto object-contain"
-              style={{ display: 'block' }}
+              className="w-full h-auto object-contain block"
             />
           </div>
         ) : (
@@ -229,12 +226,10 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {settings.show_logo && settings.logo_url ? (
-                    <Image
+                    <img
                       src={settings.logo_url}
                       alt="Logo"
-                      width={50}
-                      height={50}
-                      className="rounded bg-white p-1"
+                      className="h-[50px] w-[50px] rounded bg-white p-1 object-contain"
                     />
                   ) : (
                     <div className="w-12 h-12 bg-white rounded flex items-center justify-center">
@@ -471,11 +466,9 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
           {/* Footer Image */}
           {settings.show_footer_image && settings.footer_image_url && (
             <div className="flex justify-center">
-              <Image
+              <img
                 src={settings.footer_image_url}
                 alt="Footer"
-                width={400}
-                height={60}
                 className="max-h-16 w-auto object-contain"
               />
             </div>

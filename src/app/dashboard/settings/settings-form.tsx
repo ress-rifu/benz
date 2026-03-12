@@ -16,9 +16,8 @@ import {
 import { updateInvoiceSettings, uploadLogo } from "./actions";
 import { useTransition, useRef } from "react";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, Link as LinkIcon } from "lucide-react";
 import type { Tables } from "@/types/database";
-import Image from "next/image";
 
 interface SettingsFormProps {
   settings: Tables<"invoice_settings">;
@@ -184,11 +183,11 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               <div className="flex items-center gap-4">
                 {logoUrl ? (
                   <div className="relative h-16 w-32 overflow-hidden rounded-lg border bg-slate-50">
-                    <Image
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={logoUrl}
                       alt="Logo"
-                      fill
-                      className="object-contain p-2"
+                      className="h-full w-full object-contain p-2"
                     />
                   </div>
                 ) : (
@@ -196,7 +195,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                     No logo
                   </div>
                 )}
-                <div>
+                <div className="flex gap-2">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -219,6 +218,20 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                     Upload
                   </Button>
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <LinkIcon className="h-4 w-4 text-slate-400 shrink-0" />
+                <Input
+                  placeholder="Or paste image URL (PostImg, ImgBB, etc.)"
+                  value={logoUrl || ""}
+                  onChange={(e) => setValue("logo_url", e.target.value || null)}
+                  className="text-sm"
+                />
+                {logoUrl && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setValue("logo_url", null)}>
+                    Clear
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -351,17 +364,17 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         <Card>
           <CardHeader>
             <CardTitle>Header Image</CardTitle>
-            <CardDescription>Upload a custom header image for invoices</CardDescription>
+            <CardDescription>Upload or paste a direct image link (PostImg, ImgBB, etc.)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               {headerImageUrl ? (
                 <div className="relative h-16 w-full max-w-xs overflow-hidden rounded-lg border bg-slate-50">
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={headerImageUrl}
                     alt="Header"
-                    fill
-                    className="object-contain p-2"
+                    className="h-full w-full object-contain p-2"
                   />
                 </div>
               ) : (
@@ -393,6 +406,20 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                 </Button>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <LinkIcon className="h-4 w-4 text-slate-400 shrink-0" />
+              <Input
+                placeholder="Or paste image URL (PostImg, ImgBB, etc.)"
+                value={headerImageUrl || ""}
+                onChange={(e) => setValue("header_image_url", e.target.value || null)}
+                className="text-sm"
+              />
+              {headerImageUrl && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setValue("header_image_url", null)}>
+                  Clear
+                </Button>
+              )}
+            </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="show_header_image" className="cursor-pointer">
                 Show Header Image
@@ -409,17 +436,17 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         <Card>
           <CardHeader>
             <CardTitle>Footer Image</CardTitle>
-            <CardDescription>Upload a custom footer image for invoices</CardDescription>
+            <CardDescription>Upload or paste a direct image link (PostImg, ImgBB, etc.)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               {footerImageUrl ? (
                 <div className="relative h-16 w-full max-w-xs overflow-hidden rounded-lg border bg-slate-50">
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={footerImageUrl}
                     alt="Footer"
-                    fill
-                    className="object-contain p-2"
+                    className="h-full w-full object-contain p-2"
                   />
                 </div>
               ) : (
@@ -450,6 +477,20 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                   Upload
                 </Button>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <LinkIcon className="h-4 w-4 text-slate-400 shrink-0" />
+              <Input
+                placeholder="Or paste image URL (PostImg, ImgBB, etc.)"
+                value={footerImageUrl || ""}
+                onChange={(e) => setValue("footer_image_url", e.target.value || null)}
+                className="text-sm"
+              />
+              {footerImageUrl && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setValue("footer_image_url", null)}>
+                  Clear
+                </Button>
+              )}
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="show_footer_image" className="cursor-pointer">

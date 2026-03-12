@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         hostname: "*.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      { protocol: "https", hostname: "i.postimg.cc" },
+      { protocol: "https", hostname: "i.ibb.co" },
+      { protocol: "https", hostname: "**.imgbb.com" },
+      { protocol: "https", hostname: "**.imgur.com" },
     ],
   },
   experimental: {

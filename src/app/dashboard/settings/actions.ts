@@ -24,10 +24,12 @@ export async function updateInvoiceSettings(
 
     const supabase = await createClient();
 
+    const emptyToNull = (v: string | null | undefined) => v === "" ? null : v;
+
     const { error } = await supabase
       .from("invoice_settings")
       .update({
-        logo_url: parsed.data.logo_url,
+        logo_url: emptyToNull(parsed.data.logo_url),
         header_text: parsed.data.header_text,
         footer_text: parsed.data.footer_text,
         primary_color: parsed.data.primary_color,
@@ -44,9 +46,9 @@ export async function updateInvoiceSettings(
         margin_right: parsed.data.margin_right,
         margin_bottom: parsed.data.margin_bottom,
         margin_left: parsed.data.margin_left,
-        header_image_url: parsed.data.header_image_url,
+        header_image_url: emptyToNull(parsed.data.header_image_url),
         show_header_image: parsed.data.show_header_image,
-        footer_image_url: parsed.data.footer_image_url,
+        footer_image_url: emptyToNull(parsed.data.footer_image_url),
         show_footer_image: parsed.data.show_footer_image,
       })
       .eq("id", id);
