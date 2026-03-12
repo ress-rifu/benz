@@ -1,4 +1,5 @@
 import { getUser } from "@/lib/auth/get-user";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Sidebar } from "./components/sidebar";
 import { Header } from "./components/header";
@@ -11,6 +12,11 @@ export default async function DashboardLayout({
   const user = await getUser();
 
   if (!user) {
+    // Sign out first to break the redirect loop between layout and middleware:
+    // middleware sees a valid auth session → redirects /login back to /dashboard,
+    // but getUser() returns null (e.g. missing users table row) → redirects to /login again.
+    const supabase = await createClient();
+    await supabase.auth.signOut();
     redirect("/login");
   }
 
