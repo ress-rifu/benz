@@ -63,7 +63,6 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Authenticated user on login or public page -> redirect to dashboard
-  // But DON'T redirect if already going to dashboard (prevents loop)
   if (user && (isLoginPage || isPublicPage)) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";

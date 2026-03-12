@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { requireSuperAdmin } from "@/lib/auth/get-user";
 import { revalidatePath } from "next/cache";
 import type { UserRole } from "@/types/database";
@@ -81,7 +81,7 @@ export async function updateAdminRole(userId: string, role: UserRole) {
       return { error: "You cannot change your own role" };
     }
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { error } = await supabase
       .from("users")

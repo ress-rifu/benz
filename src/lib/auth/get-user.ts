@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { cache } from "react";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getCached, setCache } from "@/lib/redis/cache";
 import { CACHE_KEYS, CACHE_TTL } from "@/lib/redis/client";
 import type { Tables, UserRole } from "@/types/database";
@@ -17,7 +18,7 @@ interface CachedUserData {
   name: string;
 }
 
-export async function getUser(): Promise<AuthUser | null> {
+export const getUser = cache(async function getUser(): Promise<AuthUser | null> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -40,7 +41,11 @@ export async function getUser(): Promise<AuthUser | null> {
     };
   }
 
-  const { data: userData } = await supabase
+  // Use admin client to bypass RLS — the users table has policies that
+  // query users itself (for super_admin checks), causing infinite recursion.
+  // Auth is already verified above via supabase.auth.getUser().
+  const adminClient = createAdminClient();
+  const { data: userData } = await adminClient
     .from("users")
     .select("role, username, name")
     .eq("id", user.id)
@@ -62,7 +67,7 @@ export async function getUser(): Promise<AuthUser | null> {
   }
 
   return null;
-}
+});
 
 export async function requireUser(): Promise<AuthUser> {
   const user = await getUser();
@@ -98,7 +103,8 @@ export async function getUserProfile(): Promise<Tables<"users"> | null> {
     return null;
   }
 
-  const { data } = await supabase
+  const adminClient = createAdminClient();
+  const { data } = await adminClient
     .from("users")
     .select("*")
     .eq("id", user.id)
