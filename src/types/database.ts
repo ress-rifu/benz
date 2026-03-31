@@ -250,6 +250,7 @@ export interface Database {
           show_header_image: boolean;
           footer_image_url: string | null;
           show_footer_image: boolean;
+          font_size: string;
           created_at: string;
           updated_at: string;
         };
@@ -276,6 +277,7 @@ export interface Database {
           show_header_image?: boolean;
           footer_image_url?: string | null;
           show_footer_image?: boolean;
+          font_size?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -302,10 +304,157 @@ export interface Database {
           show_header_image?: boolean;
           footer_image_url?: string | null;
           show_footer_image?: boolean;
+          font_size?: string;
           created_at?: string;
           updated_at?: string;
         };
         Relationships: [];
+      };
+      quotations: {
+        Row: {
+          id: string;
+          quotation_number: string;
+          customer_name: string;
+          customer_email: string | null;
+          customer_phone: string | null;
+          customer_address: string | null;
+          vehicle_make: string;
+          vehicle_model: string;
+          vehicle_year: number | null;
+          vehicle_vin: string | null;
+          vehicle_license_plate: string | null;
+          vehicle_mileage: number | null;
+          driver_name: string | null;
+          subtotal: number;
+          tax_rate: number;
+          tax_amount: number;
+          discount_amount: number;
+          total: number;
+          notes: string | null;
+          created_by: string;
+          created_by_name: string | null;
+          settings_snapshot: Json | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          quotation_number: string;
+          customer_name: string;
+          customer_email?: string | null;
+          customer_phone?: string | null;
+          customer_address?: string | null;
+          vehicle_make: string;
+          vehicle_model: string;
+          vehicle_year?: number | null;
+          vehicle_vin?: string | null;
+          vehicle_license_plate?: string | null;
+          vehicle_mileage?: number | null;
+          driver_name?: string | null;
+          subtotal: number;
+          tax_rate?: number;
+          tax_amount?: number;
+          discount_amount?: number;
+          total: number;
+          notes?: string | null;
+          created_by: string;
+          created_by_name?: string | null;
+          settings_snapshot?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          quotation_number?: string;
+          customer_name?: string;
+          customer_email?: string | null;
+          customer_phone?: string | null;
+          customer_address?: string | null;
+          vehicle_make?: string;
+          vehicle_model?: string;
+          vehicle_year?: number | null;
+          vehicle_vin?: string | null;
+          vehicle_license_plate?: string | null;
+          vehicle_mileage?: number | null;
+          driver_name?: string | null;
+          subtotal?: number;
+          tax_rate?: number;
+          tax_amount?: number;
+          discount_amount?: number;
+          total?: number;
+          notes?: string | null;
+          created_by?: string;
+          created_by_name?: string | null;
+          settings_snapshot?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quotations_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      quotation_items: {
+        Row: {
+          id: string;
+          quotation_id: string;
+          type: "part" | "service";
+          part_id: string | null;
+          description: string;
+          quantity: number;
+          unit_price: number;
+          total: number;
+          part_model: string | null;
+          part_serial: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          quotation_id: string;
+          type: "part" | "service";
+          part_id?: string | null;
+          description: string;
+          quantity: number;
+          unit_price: number;
+          total: number;
+          part_model?: string | null;
+          part_serial?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          quotation_id?: string;
+          type?: "part" | "service";
+          part_id?: string | null;
+          description?: string;
+          quantity?: number;
+          unit_price?: number;
+          total?: number;
+          part_model?: string | null;
+          part_serial?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quotation_items_quotation_id_fkey";
+            columns: ["quotation_id"];
+            isOneToOne: false;
+            referencedRelation: "quotations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quotation_items_part_id_fkey";
+            columns: ["part_id"];
+            isOneToOne: false;
+            referencedRelation: "parts";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       service_categories: {
         Row: {

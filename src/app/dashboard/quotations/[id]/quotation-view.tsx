@@ -1,16 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Tables } from "@/types/database";
-import { ArrowLeft, Printer, CheckCircle } from "lucide-react";
+import { ArrowLeft, Printer, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useTransition } from "react";
-import { updateInvoiceStatus } from "./actions";
+import { useTransition } from "react";
+import { deleteQuotation } from "./actions";
 import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,7 +48,7 @@ interface InvoiceSettings {
   font_size: string;
 }
 
-// Convert number to words for invoice amount
+// Convert number to words for quotation amount
 function numberToWords(num: number): string {
   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
     'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
@@ -83,20 +83,19 @@ function numberToWords(num: number): string {
   return words + ones[n];
 }
 
-interface InvoiceViewProps {
-  invoice: Tables<"invoices">;
-  items: Tables<"invoice_items">[];
+interface QuotationViewProps {
+  quotation: Tables<"quotations">;
+  items: Tables<"quotation_items">[];
   settings: InvoiceSettings;
   isSuperAdmin: boolean;
-  billedByName: string | null;
+  createdByName: string | null;
 }
 
-export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByName }: InvoiceViewProps) {
+export function QuotationView({ quotation, items, settings, isSuperAdmin, createdByName }: QuotationViewProps) {
   const [isPending, startTransition] = useTransition();
-  const [currentStatus, setCurrentStatus] = useState(invoice.status);
+  const router = useRouter();
 
   const handlePrint = () => {
-    // Wait for all images to load before printing
     const images = document.querySelectorAll('img');
     const imagePromises = Array.from(images).map((img) => {
       if (img.complete) return Promise.resolve();
@@ -107,16 +106,15 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
     });
 
     Promise.all(imagePromises).then(() => {
-      // Small additional delay to ensure browser paint is complete
       setTimeout(() => {
         window.print();
       }, 150);
     });
   };
 
-  const handleStatusChange = () => {
+  const handleDelete = () => {
     startTransition(async () => {
-      const result = await updateInvoiceStatus(invoice.id, "paid");
+      const result = await deleteQuotation(quotation.id);
 
       if (result?.error) {
         toast({
@@ -125,11 +123,11 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
           variant: "destructive",
         });
       } else {
-        setCurrentStatus("paid");
         toast({
           title: "Success",
-          description: "Invoice marked as paid",
+          description: "Quotation deleted successfully",
         });
+        router.push("/dashboard/quotations");
       }
     });
   };
@@ -140,54 +138,46 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
       <div className="flex items-center justify-between" data-print-hide="true">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/dashboard/invoices">
+            <Link href="/dashboard/quotations">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Invoice {invoice.invoice_number}
+              Quotation {quotation.quotation_number}
             </h1>
-            <p className="text-slate-500">{formatDate(invoice.created_at)}</p>
+            <p className="text-slate-500">{formatDate(quotation.created_at)}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge
-            variant={currentStatus === "paid" ? "default" : "secondary"}
-            className={
-              currentStatus === "paid"
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-orange-500 hover:bg-orange-600"
-            }
-          >
-            {currentStatus === "paid" ? "Paid" : "Due"}
-          </Badge>
-          {currentStatus === "due" && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" disabled={isPending}>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Mark as Paid
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Mark Invoice as Paid?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will update the invoice status to "Paid" and include it in revenue
-                    calculations. This action will update the dashboard and sales reports
-                    immediately.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleStatusChange}>
-                    Confirm
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
+          <Button asChild variant="outline">
+            <Link href={`/dashboard/quotations/${quotation.id}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </Link>
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="text-red-600 hover:text-red-700" disabled={isPending}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Quotation?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete this quotation. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button onClick={handlePrint} variant="outline">
             <Printer className="mr-2 h-4 w-4" />
             Print
@@ -195,7 +185,7 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
         </div>
       </div>
 
-      {/* Invoice Document - Benz.pdf Layout */}
+      {/* Quotation Document */}
       <div
         data-invoice-document="true"
         className={`mx-auto max-w-4xl bg-white shadow-sm print:shadow-none print:max-w-none print:mx-0 ${settings.font_size || "text-sm"}`}
@@ -212,11 +202,10 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
       >
         {/* Header - Full Width Image OR Coded Banner */}
         {settings.show_header_image && settings.header_image_url ? (
-          /* Full-width header image - no margins, stuck to edges */
           <div className="w-full">
             <Image
               src={settings.header_image_url}
-              alt="Invoice Header"
+              alt="Quotation Header"
               width={1000}
               height={200}
               className="w-full h-auto object-contain"
@@ -224,7 +213,6 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
             />
           </div>
         ) : (
-          /* Fallback: Coded Header Banner */
           <>
             <div className="bg-blue-600 text-white px-4 py-3">
               <div className="flex items-center justify-between">
@@ -257,23 +245,30 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                 <span className="font-medium">{settings.header_text || "Golamnabi Road, Kabirpur, Ashulia, Savar, Dhaka."}</span>
               </div>
               <div className="text-right text-xs space-y-0.5">
-                {invoice.customer_phone && <p>📞 {invoice.customer_phone}</p>}
+                {quotation.customer_phone && <p>📞 {quotation.customer_phone}</p>}
               </div>
             </div>
           </>
         )}
 
-        {/* Invoice Content */}
+        {/* Quotation Content */}
         <div data-invoice-content="true" className="p-4 space-y-4">
-          {/* Invoice No & Date Row */}
+          {/* QUOTATION Title - BIGGER FONT */}
+          <div className="text-center py-3">
+            <h2 className="text-4xl font-extrabold tracking-wide text-slate-900 uppercase">
+              QUOTATION
+            </h2>
+          </div>
+
+          {/* Quotation No & Date Row */}
           <div className="border border-slate-300 flex">
             <div className="flex-1 px-3 py-2 border-r border-slate-300">
-              <span className="font-semibold">Invoice No:</span>
-              <span className="ml-2">{invoice.invoice_number}</span>
+              <span className="font-semibold">Quotation No:</span>
+              <span className="ml-2">{quotation.quotation_number}</span>
             </div>
             <div className="px-3 py-2">
               <span className="font-semibold">Date:</span>
-              <span className="ml-2">{formatDate(invoice.created_at)}</span>
+              <span className="ml-2">{formatDate(quotation.created_at)}</span>
             </div>
           </div>
 
@@ -282,58 +277,54 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
             <div className="space-y-1">
               <div className="flex">
                 <span className="font-semibold w-32">Customer Name</span>
-                <span>: {invoice.customer_name}</span>
+                <span>: {quotation.customer_name}</span>
               </div>
-              {settings.show_customer_address && invoice.customer_address && (
+              {settings.show_customer_address && quotation.customer_address && (
                 <div className="flex">
                   <span className="font-semibold w-32">Address</span>
-                  <span>: {invoice.customer_address}</span>
+                  <span>: {quotation.customer_address}</span>
                 </div>
               )}
               <div className="flex">
                 <span className="font-semibold w-32">Engine</span>
-                <span>: {invoice.vehicle_vin || "-"}</span>
+                <span>: {quotation.vehicle_vin || "-"}</span>
               </div>
-              {settings.show_customer_phone && invoice.customer_phone && (
+              {settings.show_customer_phone && quotation.customer_phone && (
                 <div className="flex">
                   <span className="font-semibold w-32">Mobile Number</span>
-                  <span>: {invoice.customer_phone}</span>
+                  <span>: {quotation.customer_phone}</span>
                 </div>
               )}
             </div>
             <div className="space-y-1">
               <div className="flex">
                 <span className="font-semibold w-32">Vehicle Reg No</span>
-                <span>: {invoice.vehicle_license_plate || "-"}</span>
+                <span>: {quotation.vehicle_license_plate || "-"}</span>
               </div>
               <div className="flex">
                 <span className="font-semibold w-32">Brand</span>
-                <span>: {invoice.vehicle_make || "-"}</span>
+                <span>: {quotation.vehicle_make || "-"}</span>
               </div>
               <div className="flex">
                 <span className="font-semibold w-32">Model</span>
-                <span>: {invoice.vehicle_model || "-"}</span>
+                <span>: {quotation.vehicle_model || "-"}</span>
               </div>
-              {invoice.vehicle_mileage && (
+              {quotation.vehicle_mileage && (
                 <div className="flex">
                   <span className="font-semibold w-32">Mileage (km)</span>
-                  <span>: {invoice.vehicle_mileage.toLocaleString()}</span>
+                  <span>: {quotation.vehicle_mileage.toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex">
-                <span className="font-semibold w-32">Status</span>
-                <span>: <span className={currentStatus === "paid" ? "text-green-600" : "text-orange-600"}>{currentStatus === "paid" ? "Paid" : "Due"}</span></span>
-              </div>
-              {invoice.driver_name && (
+              {quotation.driver_name && (
                 <div className="flex">
                   <span className="font-semibold w-32">Driver Name</span>
-                  <span>: {invoice.driver_name}</span>
+                  <span>: {quotation.driver_name}</span>
                 </div>
               )}
-              {billedByName && (
+              {createdByName && (
                 <div className="flex">
-                  <span className="font-semibold w-32">Billed By</span>
-                  <span>: {billedByName}</span>
+                  <span className="font-semibold w-32">Created By</span>
+                  <span>: {createdByName}</span>
                 </div>
               )}
             </div>
@@ -424,10 +415,10 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
           <div className="flex justify-between text-sm">
             {/* Notes */}
             <div className="max-w-xs text-xs text-slate-600">
-              {invoice.notes ? (
-                <p className="whitespace-pre-line">{invoice.notes}</p>
+              {quotation.notes ? (
+                <p className="whitespace-pre-line">{quotation.notes}</p>
               ) : (
-                <p>Note: After The Completion Of The Vehicle Work And The Handover Of the Vehicle, If Any Problem Arises Related to That work, It Must Be Reported To Service Center Within Two(2) Days. Otherwise It Will Not Be Acceptable.</p>
+                <p>This is a quotation and not an invoice. Prices are subject to change. Valid for 30 days from the date of issue.</p>
               )}
             </div>
 
@@ -436,19 +427,19 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
               <div data-invoice-totals="true" className="border border-slate-400 text-right">
                 <div className="flex border-b border-slate-300">
                   <div className="px-3 py-1.5 border-r border-slate-300 font-semibold bg-slate-50 w-32">Grand Total</div>
-                  <div className="px-3 py-1.5 w-28">{invoice.subtotal.toFixed(2)}</div>
+                  <div className="px-3 py-1.5 w-28">{quotation.subtotal.toFixed(2)}</div>
                 </div>
                 <div className="flex border-b border-slate-300">
                   <div className="px-3 py-1.5 border-r border-slate-300 font-semibold bg-slate-50 w-32">Vat & Tax</div>
-                  <div className="px-3 py-1.5 w-28">{invoice.tax_amount.toFixed(2)}</div>
+                  <div className="px-3 py-1.5 w-28">{quotation.tax_amount.toFixed(2)}</div>
                 </div>
                 <div className="flex border-b border-slate-300">
                   <div className="px-3 py-1.5 border-r border-slate-300 font-semibold bg-slate-50 w-32">Discount</div>
-                  <div className="px-3 py-1.5 w-28">{invoice.discount_amount.toFixed(2)}</div>
+                  <div className="px-3 py-1.5 w-28">{quotation.discount_amount.toFixed(2)}</div>
                 </div>
                 <div className="flex bg-slate-100">
-                  <div className="px-3 py-1.5 border-r border-slate-300 font-bold w-32">Total Bill Amount</div>
-                  <div className="px-3 py-1.5 w-28 font-bold">{invoice.total.toFixed(2)}</div>
+                  <div className="px-3 py-1.5 border-r border-slate-300 font-bold w-32">Total Amount</div>
+                  <div className="px-3 py-1.5 w-28 font-bold">{quotation.total.toFixed(2)}</div>
                 </div>
               </div>
             )}
@@ -458,7 +449,7 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
           {isSuperAdmin && (
             <div className="border border-slate-300 px-3 py-2 bg-slate-50">
               <span className="font-semibold">In word:</span>
-              <span className="ml-2">{numberToWords(invoice.total)} Taka Only</span>
+              <span className="ml-2">{numberToWords(quotation.total)} Taka Only</span>
             </div>
           )}
 

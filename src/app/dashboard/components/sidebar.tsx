@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/language/language-context";
 import {
   LayoutDashboard,
   FileText,
+  ClipboardList,
   Settings,
   Wrench,
   Cog,
@@ -32,6 +33,7 @@ export function Sidebar({ user }: SidebarProps) {
     { name: t("dashboard.services"), href: "/dashboard/services", icon: Wrench, superAdminOnly: true },
     { name: t("dashboard.parts"), href: "/dashboard/parts", icon: Cog, superAdminOnly: true },
     { name: t("dashboard.invoices"), href: "/dashboard/invoices", icon: FileText },
+    { name: t("dashboard.quotations"), href: "/dashboard/quotations", icon: ClipboardList },
     { name: t("dashboard.sales"), href: "/dashboard/sales", icon: DollarSign },
     { name: t("dashboard.admins"), href: "/dashboard/admins", icon: UserCog, superAdminOnly: true },
     { name: t("dashboard.settings"), href: "/dashboard/settings", icon: Settings, superAdminOnly: true },

@@ -51,6 +51,7 @@ export const invoiceSettingsSchema = z.object({
   show_header_image: z.boolean(),
   footer_image_url: z.string().url().optional().nullable(),
   show_footer_image: z.boolean(),
+  font_size: z.string(),
 });
 
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { FormSkeleton } from "@/components/skeletons/form-skeleton";
 import { createClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
-import { InvoiceView } from "./invoice-view";
+import { QuotationView } from "./quotation-view";
 import { getUser } from "@/lib/auth/get-user";
 
 interface InvoiceSettings {
@@ -55,36 +55,36 @@ const DEFAULT_SETTINGS: InvoiceSettings = {
   font_size: "text-sm",
 };
 
-async function getInvoice(id: string) {
+async function getQuotation(id: string) {
   const supabase = await createClient();
 
-  const { data: invoice } = await supabase
-    .from("invoices")
+  const { data: quotation } = await supabase
+    .from("quotations")
     .select("*")
     .eq("id", id)
     .single();
 
-  if (!invoice) {
+  if (!quotation) {
     return null;
   }
 
   const { data: items } = await supabase
-    .from("invoice_items")
+    .from("quotation_items")
     .select("*")
-    .eq("invoice_id", id)
+    .eq("quotation_id", id)
     .order("created_at");
 
-  return { invoice, items: items || [] };
+  return { quotation, items: items || [] };
 }
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function InvoiceDetailPage({ params }: PageProps) {
+export default async function QuotationDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [invoiceData, user] = await Promise.all([
-    getInvoice(id),
+  const [quotationData, user] = await Promise.all([
+    getQuotation(id),
     getUser(),
   ]);
 
@@ -92,29 +92,27 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
     redirect("/login");
   }
 
-  if (!invoiceData) {
+  if (!quotationData) {
     notFound();
   }
 
   const isSuperAdmin = user.role === "super_admin";
 
   // Use stored settings snapshot if available, otherwise use defaults
-  // This ensures past invoices are displayed exactly as they were created
-  const settings: InvoiceSettings = invoiceData.invoice.settings_snapshot
-    ? (invoiceData.invoice.settings_snapshot as unknown as InvoiceSettings)
+  const settings: InvoiceSettings = quotationData.quotation.settings_snapshot
+    ? (quotationData.quotation.settings_snapshot as unknown as InvoiceSettings)
     : DEFAULT_SETTINGS;
 
-  // Use stored billed_by_name for immutability
-  const billedByName = invoiceData.invoice.billed_by_name || null;
+  const createdByName = quotationData.quotation.created_by_name || null;
 
   return (
     <Suspense fallback={<FormSkeleton fields={10} />}>
-      <InvoiceView
-        invoice={invoiceData.invoice}
-        items={invoiceData.items}
+      <QuotationView
+        quotation={quotationData.quotation}
+        items={quotationData.items}
         settings={settings}
         isSuperAdmin={isSuperAdmin}
-        billedByName={billedByName}
+        createdByName={createdByName}
       />
     </Suspense>
   );

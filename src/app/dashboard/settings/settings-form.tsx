@@ -10,6 +10,13 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   invoiceSettingsSchema,
   type InvoiceSettingsInput,
 } from "@/lib/validations/invoice";
@@ -63,6 +70,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       show_header_image: settings.show_header_image ?? true,
       footer_image_url: settings.footer_image_url,
       show_footer_image: settings.show_footer_image ?? true,
+      font_size: settings.font_size ?? "text-sm",
     },
   });
 
@@ -266,6 +274,27 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                   </p>
                 )}
               </div>
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-2">
+              <Label>Document Font Size</Label>
+              <Select
+                value={watch("font_size")}
+                onValueChange={(value) => setValue("font_size", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select text size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="text-xs">Extra Small</SelectItem>
+                  <SelectItem value="text-sm">Small (Default)</SelectItem>
+                  <SelectItem value="text-base">Medium</SelectItem>
+                  <SelectItem value="text-lg">Large</SelectItem>
+                  <SelectItem value="text-xl">Extra Large</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>

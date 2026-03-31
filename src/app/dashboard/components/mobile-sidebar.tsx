@@ -16,6 +16,7 @@ import {
 import {
   LayoutDashboard,
   FileText,
+  ClipboardList,
   Settings,
   Wrench,
   Cog,
@@ -38,6 +39,7 @@ const navigation = [
   { name: "Services", href: "/dashboard/services", icon: Wrench, superAdminOnly: true },
   { name: "Parts", href: "/dashboard/parts", icon: Cog, superAdminOnly: true },
   { name: "Invoices", href: "/dashboard/invoices", icon: FileText },
+  { name: "Quotations", href: "/dashboard/quotations", icon: ClipboardList },
   { name: "Sales", href: "/dashboard/sales", icon: DollarSign },
   { name: "Admins", href: "/dashboard/admins", icon: UserCog, superAdminOnly: true },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, superAdminOnly: true },

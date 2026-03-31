@@ -94,6 +94,7 @@ const translations = {
       totalRevenue: "মোট আয়",
       outstandingBalance: "বাকি আছে",
       invoices: "ইনভয়েস",
+      quotations: "কোটেশন",
       customers: "গ্রাহক",
       parts: "পার্টস",
       services: "সার্ভিস",
@@ -124,6 +125,27 @@ const translations = {
       confirmMarkPaidDesc: "এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না",
       alreadyPaid: "ইতিমধ্যে পরিশোধিত",
       statusUpdated: "স্ট্যাটাস আপডেট হয়েছে",
+    },
+    
+    // Quotations
+    quotations: {
+      title: "কোটেশন",
+      createNew: "নতুন কোটেশন তৈরি করুন",
+      searchPlaceholder: "কোটেশন নম্বর, গ্রাহক বা গাড়ি খুঁজুন...",
+      quotationNumber: "কোটেশন নম্বর",
+      customer: "গ্রাহক",
+      vehicle: "গাড়ি",
+      date: "তারিখ",
+      amount: "পরিমাণ",
+      viewQuotation: "কোটেশন দেখুন",
+      editQuotation: "কোটেশন সম্পাদনা করুন",
+      printQuotation: "প্রিন্ট করুন",
+      noQuotations: "এখনো কোনো কোটেশন নেই",
+      noQuotationsDesc: "প্রথম কোটেশন তৈরি করুন",
+      noResults: "কোনো কোটেশন পাওয়া যায়নি",
+      noResultsDesc: "অন্য শব্দ দিয়ে খুঁজুন",
+      deleteConfirm: "কোটেশন মুছে ফেলবেন?",
+      deleteConfirmDesc: "এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না",
     },
     
     // Customers
@@ -371,6 +393,7 @@ const translations = {
       totalRevenue: "Total Revenue",
       outstandingBalance: "Outstanding Balance",
       invoices: "Invoices",
+      quotations: "Quotations",
       customers: "Customers",
       parts: "Parts",
       services: "Services",
@@ -401,6 +424,27 @@ const translations = {
       confirmMarkPaidDesc: "This action cannot be undone",
       alreadyPaid: "Already marked as paid",
       statusUpdated: "Status updated successfully",
+    },
+    
+    // Quotations
+    quotations: {
+      title: "Quotations",
+      createNew: "Create New Quotation",
+      searchPlaceholder: "Search by quotation #, customer, or vehicle...",
+      quotationNumber: "Quotation #",
+      customer: "Customer",
+      vehicle: "Vehicle",
+      date: "Date",
+      amount: "Amount",
+      viewQuotation: "View Quotation",
+      editQuotation: "Edit Quotation",
+      printQuotation: "Print",
+      noQuotations: "No quotations yet",
+      noQuotationsDesc: "Create your first quotation to get started",
+      noResults: "No quotations found",
+      noResultsDesc: "Try a different search term",
+      deleteConfirm: "Delete quotation?",
+      deleteConfirmDesc: "This action cannot be undone",
     },
     
     // Customers
