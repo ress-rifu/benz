@@ -392,7 +392,6 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                   <tr className="bg-slate-100 border-b border-slate-400">
                     <th className="border-r border-slate-400 px-2 py-1 text-left w-12">SL No</th>
                     <th className="border-r border-slate-400 px-2 py-1 text-left">Service Charge</th>
-                    <th className="border-r border-slate-400 px-2 py-1 text-center w-16">Qty</th>
                     {isSuperAdmin && (
                       <>
                         <th className="border-r border-slate-400 px-2 py-1 text-right w-24">Unit Price</th>
@@ -406,7 +405,6 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                     <tr key={item.id} className="border-b border-slate-300">
                       <td className="border-r border-slate-300 px-2 py-1 text-center">{idx + 1}</td>
                       <td className="border-r border-slate-300 px-2 py-1">{item.description}</td>
-                      <td className="border-r border-slate-300 px-2 py-1 text-center">{item.quantity}</td>
                       {isSuperAdmin && (
                         <>
                           <td className="border-r border-slate-300 px-2 py-1 text-right">{item.unit_price.toFixed(2)}</td>

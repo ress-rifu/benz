@@ -197,6 +197,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                       alt="Logo"
                       fill
                       sizes="128px"
+                      priority
                       className="object-contain p-2"
                     />
                   </div>
@@ -392,6 +393,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                     alt="Header"
                     fill
                     sizes="320px"
+                    priority
                     className="object-contain p-2"
                   />
                 </div>
@@ -451,6 +453,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                     alt="Footer"
                     fill
                     sizes="320px"
+                    priority
                     className="object-contain p-2"
                   />
                 </div>

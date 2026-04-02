@@ -104,6 +104,18 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
     ? (invoiceData.invoice.settings_snapshot as unknown as InvoiceSettings)
     : DEFAULT_SETTINGS;
 
+  // Fetch current settings for font_size (should always reflect latest preference)
+  const supabase = await createClient();
+  const { data: currentSettings } = await supabase
+    .from("invoice_settings")
+    .select("font_size")
+    .limit(1)
+    .single();
+
+  if (currentSettings?.font_size) {
+    settings.font_size = currentSettings.font_size;
+  }
+
   // Use stored billed_by_name for immutability
   const billedByName = invoiceData.invoice.billed_by_name || null;
 

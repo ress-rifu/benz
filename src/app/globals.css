@@ -110,9 +110,41 @@
      INVOICE DOCUMENT PRINT STYLES
      ======================================== */
 
-  /* Compact font sizes for paper saving */
+  /* Dynamic font sizes for print — respects the font_size setting */
+  /* Base sizes per Tailwind class (set via CSS vars on the document element) */
+  [data-invoice-document="true"].text-xs {
+    --print-base: 7px;
+    --print-heading: 11px;
+    --print-subheading: 9px;
+    --print-body: 6px;
+  }
+  [data-invoice-document="true"].text-sm {
+    --print-base: 9px;
+    --print-heading: 13px;
+    --print-subheading: 11px;
+    --print-body: 8px;
+  }
+  [data-invoice-document="true"].text-base {
+    --print-base: 11px;
+    --print-heading: 15px;
+    --print-subheading: 13px;
+    --print-body: 10px;
+  }
+  [data-invoice-document="true"].text-lg {
+    --print-base: 13px;
+    --print-heading: 17px;
+    --print-subheading: 15px;
+    --print-body: 12px;
+  }
+  [data-invoice-document="true"].text-xl {
+    --print-base: 15px;
+    --print-heading: 19px;
+    --print-subheading: 17px;
+    --print-body: 14px;
+  }
+
   [data-invoice-document="true"] {
-    font-size: 9px !important;
+    font-size: var(--print-base, 9px) !important;
     line-height: 1.2 !important;
     display: flex !important;
     flex-direction: column !important;
@@ -128,19 +160,19 @@
 
   [data-invoice-document="true"] h1,
   [data-invoice-document="true"] h2 {
-    font-size: 13px !important;
+    font-size: var(--print-heading, 13px) !important;
   }
 
   [data-invoice-document="true"] h3,
   [data-invoice-document="true"] h4 {
-    font-size: 11px !important;
+    font-size: var(--print-subheading, 11px) !important;
   }
 
   [data-invoice-document="true"] p,
   [data-invoice-document="true"] td,
   [data-invoice-document="true"] th,
   [data-invoice-document="true"] span {
-    font-size: 8px !important;
+    font-size: var(--print-body, 8px) !important;
   }
 
   /* Compact table cell padding */
