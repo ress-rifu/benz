@@ -196,6 +196,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                       src={logoUrl}
                       alt="Logo"
                       fill
+                      sizes="128px"
                       className="object-contain p-2"
                     />
                   </div>
@@ -390,6 +391,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                     src={headerImageUrl}
                     alt="Header"
                     fill
+                    sizes="320px"
                     className="object-contain p-2"
                   />
                 </div>
@@ -448,6 +450,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                     src={footerImageUrl}
                     alt="Footer"
                     fill
+                    sizes="320px"
                     className="object-contain p-2"
                   />
                 </div>

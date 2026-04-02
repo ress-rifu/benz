@@ -36,7 +36,7 @@ export function RevenueLineChart({ data, title }: RevenueChartProps) {
             </CardHeader>
             <CardContent>
                 <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                         <LineChart data={data}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                             <XAxis
@@ -89,7 +89,7 @@ export function RevenueBarChart({ data, title }: RevenueChartProps) {
             </CardHeader>
             <CardContent>
                 <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                         <BarChart data={data}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                             <XAxis
@@ -149,7 +149,7 @@ export function StatusPieChart({ data, title }: StatusPieChartProps) {
             </CardHeader>
             <CardContent>
                 <div className="h-[250px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                         <PieChart>
                             <Pie
                                 data={data as any}

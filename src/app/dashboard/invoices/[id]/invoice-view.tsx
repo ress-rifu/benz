@@ -5,12 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Tables } from "@/types/database";
-import { ArrowLeft, Printer, CheckCircle } from "lucide-react";
+import { ArrowLeft, Printer, CheckCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useTransition } from "react";
-import { updateInvoiceStatus } from "./actions";
+import { updateInvoiceStatus, deleteInvoice } from "./actions";
 import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -94,6 +95,7 @@ interface InvoiceViewProps {
 export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByName }: InvoiceViewProps) {
   const [isPending, startTransition] = useTransition();
   const [currentStatus, setCurrentStatus] = useState(invoice.status);
+  const router = useRouter();
 
   const handlePrint = () => {
     // Wait for all images to load before printing
@@ -188,6 +190,48 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
               </AlertDialogContent>
             </AlertDialog>
           )}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="text-red-600 hover:text-red-700" disabled={isPending}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Invoice?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete this invoice and all its items. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    startTransition(async () => {
+                      const result = await deleteInvoice(invoice.id);
+                      if (result?.error) {
+                        toast({
+                          title: "Error",
+                          description: result.error,
+                          variant: "destructive",
+                        });
+                      } else {
+                        toast({
+                          title: "Success",
+                          description: "Invoice deleted successfully",
+                        });
+                        router.push("/dashboard/invoices");
+                      }
+                    });
+                  }}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button onClick={handlePrint} variant="outline">
             <Printer className="mr-2 h-4 w-4" />
             Print
@@ -300,6 +344,12 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                   <span>: {invoice.customer_phone}</span>
                 </div>
               )}
+              {billedByName && (
+                <div className="flex">
+                  <span className="font-semibold w-32">Billed By</span>
+                  <span>: {billedByName}</span>
+                </div>
+              )}
             </div>
             <div className="space-y-1">
               <div className="flex">
@@ -330,12 +380,7 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                   <span>: {invoice.driver_name}</span>
                 </div>
               )}
-              {billedByName && (
-                <div className="flex">
-                  <span className="font-semibold w-32">Billed By</span>
-                  <span>: {billedByName}</span>
-                </div>
-              )}
+
             </div>
           </div>
 

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { invalidateCache } from "@/lib/redis/cache";
 import { CACHE_KEYS } from "@/lib/redis/client";
 import type { InvoiceStatus } from "@/types/database";
+import { redirect } from "next/navigation";
 
 export async function updateInvoiceStatus(invoiceId: string, status: InvoiceStatus) {
   try {
@@ -67,6 +68,43 @@ export async function updateInvoiceStatus(invoiceId: string, status: InvoiceStat
     return { success: true };
   } catch (e) {
     console.error("Update invoice status error:", e);
+    return { error: e instanceof Error ? e.message : "An error occurred" };
+  }
+}
+
+export async function deleteInvoice(invoiceId: string) {
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+
+    // Delete invoice items first (cascade should handle it, but be explicit)
+    await supabase
+      .from("invoice_items")
+      .delete()
+      .eq("invoice_id", invoiceId);
+
+    // Delete invoice
+    const { error } = await supabase
+      .from("invoices")
+      .delete()
+      .eq("id", invoiceId);
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    // Invalidate caches since revenue calculations may change
+    await invalidateCache(CACHE_KEYS.DASHBOARD_SUMMARY);
+
+    // Revalidate paths
+    revalidatePath("/dashboard/invoices");
+    revalidatePath("/dashboard/sales");
+    revalidatePath("/dashboard/customers");
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (e) {
+    console.error("Delete invoice error:", e);
     return { error: e instanceof Error ? e.message : "An error occurred" };
   }
 }
