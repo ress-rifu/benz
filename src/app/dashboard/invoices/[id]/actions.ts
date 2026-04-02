@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache";
 import { invalidateCache } from "@/lib/redis/cache";
 import { CACHE_KEYS } from "@/lib/redis/client";
 import type { InvoiceStatus } from "@/types/database";
-import { redirect } from "next/navigation";
 
 export async function updateInvoiceStatus(invoiceId: string, status: InvoiceStatus) {
   try {
