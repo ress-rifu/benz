@@ -11,15 +11,19 @@ import { formatCurrency } from "@/lib/utils";
 import { getPartsWithRelations } from "./actions";
 import { PartActions } from "./part-actions";
 
-export async function PartsTable() {
-    const parts = await getPartsWithRelations();
+export async function PartsTable({ searchQuery }: { searchQuery?: string }) {
+    const parts = await getPartsWithRelations(searchQuery);
 
     if (parts.length === 0) {
         return (
             <div className="rounded-lg border border-dashed border-slate-300 p-12 text-center">
-                <p className="text-slate-500">No parts yet</p>
+                <p className="text-slate-500">
+                    {searchQuery ? "No parts found" : "No parts yet"}
+                </p>
                 <p className="mt-1 text-sm text-slate-400">
-                    Add your first part to get started
+                    {searchQuery
+                        ? "Try a different search term"
+                        : "Add your first part to get started"}
                 </p>
             </div>
         );

@@ -197,6 +197,7 @@ const translations = {
       outOfStock: "স্টকে নেই",
       noParts: "এখনো কোনো পার্ট নেই",
       noPartsDesc: "প্রথম পার্ট যোগ করুন",
+      searchPlaceholder: "নাম, SKU বা পার্ট নম্বর খুঁজুন...",
     },
     
     // Services
@@ -496,6 +497,7 @@ const translations = {
       outOfStock: "Out of Stock",
       noParts: "No parts yet",
       noPartsDesc: "Add your first part to get started",
+      searchPlaceholder: "Search by name, SKU, or part number...",
     },
     
     // Services

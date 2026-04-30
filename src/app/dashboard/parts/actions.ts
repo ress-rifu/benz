@@ -32,9 +32,9 @@ export async function getPartBrands() {
     return data || [];
 }
 
-export async function getPartsWithRelations() {
+export async function getPartsWithRelations(searchQuery?: string) {
     const supabase = await createClient();
-    const { data } = await supabase
+    let query = supabase
         .from("parts")
         .select(`
       *,
@@ -50,6 +50,15 @@ export async function getPartsWithRelations() {
       )
     `)
         .order("name");
+
+    if (searchQuery) {
+        const escaped = searchQuery.replace(/[%,]/g, "");
+        query = query.or(
+            `name.ilike.%${escaped}%,name_bn.ilike.%${escaped}%,sku.ilike.%${escaped}%,part_number.ilike.%${escaped}%`
+        );
+    }
+
+    const { data } = await query;
     return data || [];
 }
 
