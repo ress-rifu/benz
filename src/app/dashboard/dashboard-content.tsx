@@ -13,6 +13,13 @@ import {
 } from "lucide-react";
 import { RevenueBarChart } from "./components/revenue-charts";
 import { FinanceCards } from "./components/finance-cards";
+import {
+  getLast7DaysRange,
+  getMonthRange,
+  getPreviousMonthRange,
+  getBusinessWeekdayKey,
+  getLastNWeekdayKeys,
+} from "@/lib/timezone";
 
 interface DashboardContentProps {
   isSuperAdmin: boolean;
@@ -45,14 +52,11 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
   try {
     const supabase = await createClient();
 
-    // Date calculations
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - 7);
-
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    // Date boundaries computed in the business timezone (Asia/Dhaka) so they
+    // are correct regardless of the server's local timezone (Vercel = UTC).
+    const last7Days = getLast7DaysRange();
+    const thisMonth = getMonthRange();
+    const prevMonth = getPreviousMonthRange();
 
     const [
       lowStockPartsResult,
@@ -70,11 +74,15 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
       supabase.from("parts").select("id, quantity, min_stock_level").eq("is_active", true),
       supabase.from("invoices").select("*", { count: "exact", head: true }),
       supabase.from("invoices").select("total, status"),
-      supabase.from("invoices").select("total, status").gte("created_at", startOfWeek.toISOString()),
-      supabase.from("invoices").select("total, status").gte("created_at", startOfMonth.toISOString()),
       supabase.from("invoices").select("total, status")
-        .gte("created_at", startOfPrevMonth.toISOString())
-        .lte("created_at", endOfPrevMonth.toISOString()),
+        .gte("created_at", last7Days.from)
+        .lt("created_at", last7Days.to),
+      supabase.from("invoices").select("total, status")
+        .gte("created_at", thisMonth.from)
+        .lt("created_at", thisMonth.to),
+      supabase.from("invoices").select("total, status")
+        .gte("created_at", prevMonth.from)
+        .lt("created_at", prevMonth.to),
       supabase.from("customers").select("*", { count: "exact", head: true }),
       supabase.from("services").select("*", { count: "exact", head: true }),
       supabase.from("parts").select("*", { count: "exact", head: true }),
@@ -84,7 +92,8 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
         .limit(5),
       supabase.from("invoices")
         .select("total, status, created_at")
-        .gte("created_at", startOfWeek.toISOString())
+        .gte("created_at", last7Days.from)
+        .lt("created_at", last7Days.to)
         .order("created_at", { ascending: true }),
     ]);
 
@@ -109,19 +118,18 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
       ? ((monthlyRevenue - previousMonthRevenue) / previousMonthRevenue) * 100
       : 0;
 
-    // Process daily revenue for last 7 days (paid invoices only)
+    // Process daily revenue for last 7 days (paid invoices only).
+    // Keys come from the business TZ so an invoice created at e.g. 1 AM Dhaka
+    // doesn't get bucketed into the previous weekday in UTC.
+    const orderedKeys = getLastNWeekdayKeys(7);
     const dailyData: { [key: string]: { revenue: number; invoices: number } } = {};
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      const key = d.toLocaleDateString("en-US", { weekday: "short" });
+    for (const key of orderedKeys) {
       dailyData[key] = { revenue: 0, invoices: 0 };
     }
 
     dailyInvoicesResult.data?.forEach((inv) => {
       if (inv.status === "paid") {
-        const d = new Date(inv.created_at);
-        const key = d.toLocaleDateString("en-US", { weekday: "short" });
+        const key = getBusinessWeekdayKey(inv.created_at);
         if (dailyData[key]) {
           dailyData[key].revenue += Number(inv.total);
           dailyData[key].invoices += 1;
@@ -129,10 +137,10 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
       }
     });
 
-    const weeklyRevenueData = Object.entries(dailyData).map(([date, data]) => ({
+    const weeklyRevenueData = orderedKeys.map((date) => ({
       date,
-      revenue: data.revenue,
-      invoices: data.invoices,
+      revenue: dailyData[date].revenue,
+      invoices: dailyData[date].invoices,
     }));
 
     // Calculate low stock items: parts where quantity < min_stock_level

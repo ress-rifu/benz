@@ -2,6 +2,12 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
+import {
+  getTodayRange,
+  getWeekRange,
+  getMonthRange,
+  getAllTimeRange,
+} from "@/lib/timezone";
 
 export type TimeFilter = "today" | "week" | "month" | "all" | "custom";
 
@@ -27,52 +33,28 @@ export interface SalesData {
 }
 
 /**
- * Get date range boundaries based on filter type
+ * Get date range boundaries based on filter type.
+ *
+ * Boundaries are anchored to the business timezone (Asia/Dhaka) regardless of
+ * where the server runs. On Vercel (UTC) the previous naive math made
+ * "today" / "this month" roll back ~6 hours and pull invoices from the
+ * previous period.
  */
 function getDateRange(filter: TimeFilter, customRange?: DateRange): DateRange {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
   switch (filter) {
     case "today":
-      return {
-        from: today.toISOString(),
-        to: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString(),
-      };
-
-    case "week": {
-      const dayOfWeek = today.getDay();
-      const monday = new Date(today);
-      monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-      const sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 7);
-      return {
-        from: monday.toISOString(),
-        to: sunday.toISOString(),
-      };
-    }
-
-    case "month": {
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-      return {
-        from: firstDay.toISOString(),
-        to: lastDay.toISOString(),
-      };
-    }
-
+      return getTodayRange();
+    case "week":
+      return getWeekRange();
+    case "month":
+      return getMonthRange();
     case "all":
-      return {
-        from: new Date("2000-01-01").toISOString(),
-        to: new Date("2099-12-31").toISOString(),
-      };
-
+      return getAllTimeRange();
     case "custom":
       if (!customRange) {
         throw new Error("Custom range requires from and to dates");
       }
       return customRange;
-
     default:
       throw new Error(`Invalid filter: ${filter}`);
   }
