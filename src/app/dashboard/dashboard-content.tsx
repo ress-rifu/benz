@@ -235,7 +235,7 @@ export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) 
         </Card>
 
         {!isSuperAdmin && (
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <Card className="bg-linear-to-br from-purple-50 to-purple-100 border-purple-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-purple-700">
                 Total Invoices

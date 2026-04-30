@@ -27,7 +27,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+      <Card className="bg-linear-to-br from-green-50 to-green-100 border-green-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-green-700">
             {t("dashboard.monthlyRevenue")}
@@ -55,7 +55,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+      <Card className="bg-linear-to-br from-blue-50 to-blue-100 border-blue-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-blue-700">
             {t("dashboard.weeklyRevenue")}
@@ -70,7 +70,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
+      <Card className="bg-linear-to-br from-amber-50 to-amber-100 border-amber-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-amber-700">
             {t("dashboard.totalRevenue")}
@@ -85,7 +85,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+      <Card className="bg-linear-to-br from-orange-50 to-orange-100 border-orange-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-orange-700">
             {t("dashboard.outstandingBalance")}

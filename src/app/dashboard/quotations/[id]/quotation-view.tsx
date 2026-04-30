@@ -188,7 +188,7 @@ export function QuotationView({ quotation, items, settings, isSuperAdmin, create
       {/* Quotation Document */}
       <div
         data-invoice-document="true"
-        className={`mx-auto max-w-4xl bg-white shadow-sm print:shadow-none print:max-w-none print:mx-0 ${settings.font_size || "text-sm"}`}
+        className={`mx-auto max-w-4xl bg-white shadow-xs print:shadow-none print:max-w-none print:mx-0 ${settings.font_size || "text-sm"}`}
         style={
           {
             "--invoice-primary": settings.primary_color,

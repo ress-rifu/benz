@@ -17,7 +17,7 @@ export default async function DashboardLayout({
   return (
     <div
       id="dashboard-layout"
-      className="flex h-[100dvh] overflow-hidden bg-slate-50 print:block print:h-auto print:bg-white print:overflow-visible"
+      className="flex h-dvh overflow-hidden bg-slate-50 print:block print:h-auto print:bg-white print:overflow-visible"
     >
       <Sidebar user={user} />
       <div className="flex flex-1 flex-col overflow-hidden print:overflow-visible">

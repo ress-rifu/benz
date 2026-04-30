@@ -74,7 +74,7 @@ export function LoginForm() {
       <Button
         type="submit"
         disabled={isPending}
-        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold"
+        className="w-full bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold"
       >
         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {isPending ? t("auth.loggingIn") : t("auth.loginButton")}

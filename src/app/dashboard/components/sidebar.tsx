@@ -44,8 +44,8 @@ export function Sidebar({ user }: SidebarProps) {
   );
 
   return (
-    <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white lg:flex print:hidden">
-      <div className="flex h-16 items-center border-b border-slate-200 px-6">
+    <aside className="hidden h-full w-64 flex-col overflow-hidden border-r border-slate-200 bg-white lg:flex print:hidden">
+      <div className="flex h-16 shrink-0 items-center border-b border-slate-200 px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
           <img
             src="/logo.webp"
@@ -58,7 +58,7 @@ export function Sidebar({ user }: SidebarProps) {
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {filteredNavigation.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -82,7 +82,7 @@ export function Sidebar({ user }: SidebarProps) {
         })}
       </nav>
 
-      <div className="border-t border-slate-200 p-4">
+      <div className="shrink-0 border-t border-slate-200 p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200">
             <span className="text-sm font-medium text-slate-600">
