@@ -4,9 +4,15 @@ import { getUser } from "@/lib/auth/get-user";
 import { getSalesData } from "./actions";
 import { SalesContent } from "./sales-content";
 import { createClient } from "@/lib/supabase/server";
+import { parsePagination } from "@/lib/pagination";
 
 interface PageProps {
-  searchParams: Promise<{ filter?: string; q?: string }>;
+  searchParams: Promise<{
+    filter?: string;
+    q?: string;
+    page?: string;
+    pageSize?: string;
+  }>;
 }
 
 export default async function SalesPage({ searchParams }: PageProps) {
@@ -16,18 +22,19 @@ export default async function SalesPage({ searchParams }: PageProps) {
     redirect("/login");
   }
 
-  const { filter: rawFilter = "month", q } = await searchParams;
-
-  // Fall back to "month" if custom filter is set without date range in URL
+  const sp = await searchParams;
+  const { filter: rawFilter = "month", q } = sp;
   const filter = rawFilter === "custom" ? "month" : rawFilter;
+  const { page, pageSize, from, to } = parsePagination(sp);
 
-  // Fetch initial data and parts/services lists in parallel
   const supabase = await createClient();
   const [initialData, partsResult, servicesResult] = await Promise.all([
     getSalesData(
       filter as "today" | "week" | "month" | "all" | "custom",
       undefined,
-      q
+      q,
+      undefined,
+      { from, to }
     ),
     supabase.from("parts").select("id, name").eq("is_active", true).order("name"),
     supabase.from("services").select("id, name").eq("is_active", true).order("name"),
@@ -48,6 +55,8 @@ export default async function SalesPage({ searchParams }: PageProps) {
         initialData={initialData}
         initialFilter={filter as "today" | "week" | "month" | "all" | "custom"}
         initialSearch={q}
+        initialPage={page}
+        initialPageSize={pageSize}
         parts={parts}
         services={services}
       />

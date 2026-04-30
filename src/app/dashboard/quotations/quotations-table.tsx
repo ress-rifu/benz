@@ -5,19 +5,29 @@ import { QuotationsTableClient } from "./quotations-table-client";
 interface QuotationsTableProps {
   searchQuery?: string;
   isSuperAdmin: boolean;
+  page: number;
+  pageSize: number;
 }
 
 async function getQuotationsWithItems(
-  searchQuery?: string
-): Promise<(Tables<"quotations"> & { items: Tables<"quotation_items">[] })[]> {
+  searchQuery: string | undefined,
+  from: number,
+  to: number
+): Promise<{
+  rows: (Tables<"quotations"> & { items: Tables<"quotation_items">[] })[];
+  total: number;
+}> {
   const supabase = await createClient();
 
   let query = supabase
     .from("quotations")
-    .select(`
+    .select(
+      `
       *,
       items:quotation_items(*)
-    `)
+    `,
+      { count: "exact" }
+    )
     .order("created_at", { ascending: false });
 
   if (searchQuery) {
@@ -26,19 +36,25 @@ async function getQuotationsWithItems(
     );
   }
 
-  const { data } = await query;
-  
-  return (data || []).map((quotation) => ({
+  const { data, count } = await query.range(from, to);
+
+  const rows = (data || []).map((quotation) => ({
     ...quotation,
     items: quotation.items || [],
   }));
+
+  return { rows, total: count || 0 };
 }
 
 export async function QuotationsTable({
   searchQuery,
   isSuperAdmin,
+  page,
+  pageSize,
 }: QuotationsTableProps) {
-  const quotations = await getQuotationsWithItems(searchQuery);
+  const from = (page - 1) * pageSize;
+  const to = page * pageSize - 1;
+  const { rows: quotations, total } = await getQuotationsWithItems(searchQuery, from, to);
   const hasFilters = !!searchQuery;
 
   return (
@@ -46,6 +62,9 @@ export async function QuotationsTable({
       quotations={quotations}
       isSuperAdmin={isSuperAdmin}
       hasFilters={hasFilters}
+      total={total}
+      page={page}
+      pageSize={pageSize}
     />
   );
 }

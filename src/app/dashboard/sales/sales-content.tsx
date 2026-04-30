@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { DollarSign, TrendingUp, FileText, Package, Wrench, X } from "lucide-react";
 import { SalesHeader } from "./sales-header";
 import { SalesTable } from "./sales-table";
@@ -12,11 +13,14 @@ import { getSalesData } from "./actions";
 import { useSearchParams } from "next/navigation";
 import { useLanguage } from "@/lib/language/language-context";
 import { MultiSearchableSelect } from "@/components/ui/multi-searchable-select";
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/lib/pagination";
 
 interface SalesContentProps {
   initialData: SalesData;
   initialFilter: TimeFilter;
   initialSearch?: string;
+  initialPage?: number;
+  initialPageSize?: number;
   parts: { id: string; name: string }[];
   services: { id: string; name: string }[];
 }
@@ -25,6 +29,8 @@ export function SalesContent({
   initialData,
   initialFilter,
   initialSearch,
+  initialPage,
+  initialPageSize,
   parts,
   services,
 }: SalesContentProps) {
@@ -36,6 +42,12 @@ export function SalesContent({
   const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q") || "";
+  const pageParam = Math.max(1, Number(searchParams.get("page")) || initialPage || 1);
+  const sizeParam = (() => {
+    const n = Number(searchParams.get("pageSize"));
+    if ((PAGE_SIZE_OPTIONS as readonly number[]).includes(n)) return n;
+    return initialPageSize || DEFAULT_PAGE_SIZE;
+  })();
   const { t } = useLanguage();
 
   // Build options for searchable selects
@@ -58,20 +70,40 @@ export function SalesContent({
     }
     : undefined;
 
-  // Refetch data when any filter changes
+  const from = (pageParam - 1) * sizeParam;
+  const to = pageParam * sizeParam - 1;
+
+  // Refetch data when any filter or page changes
   useEffect(() => {
     startTransition(async () => {
-      const data = await getSalesData(currentFilter, customDateRange, searchQuery, itemFilter);
+      const data = await getSalesData(
+        currentFilter,
+        customDateRange,
+        searchQuery,
+        itemFilter,
+        { from, to }
+      );
       setSalesData(data);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, currentFilter, customDateRange, selectedPartIds, selectedServiceNames]);
+  }, [
+    searchQuery,
+    currentFilter,
+    customDateRange,
+    selectedPartIds,
+    selectedServiceNames,
+    pageParam,
+    sizeParam,
+  ]);
 
   const handleFilterChange = (filter: TimeFilter, customRange?: DateRange) => {
     setCurrentFilter(filter);
     setCustomDateRange(customRange);
     startTransition(async () => {
-      const data = await getSalesData(filter, customRange, searchQuery, itemFilter);
+      const data = await getSalesData(filter, customRange, searchQuery, itemFilter, {
+        from,
+        to,
+      });
       setSalesData(data);
     });
   };
@@ -82,8 +114,8 @@ export function SalesContent({
   };
 
   const averageInvoiceValue =
-    salesData.invoices.length > 0
-      ? salesData.totalRevenue / salesData.invoices.length
+    salesData.totalCount > 0
+      ? salesData.totalRevenue / salesData.totalCount
       : 0;
 
   // Label for the filtered revenue card
@@ -190,7 +222,7 @@ export function SalesContent({
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{salesData.invoices.length}</div>
+            <div className="text-2xl font-bold">{salesData.totalCount}</div>
             <p className="text-xs text-muted-foreground">
               {t("sales.invoicesGenerated")}
             </p>
@@ -222,6 +254,11 @@ export function SalesContent({
         ) : (
           <SalesTable invoices={salesData.invoices} />
         )}
+        <Pagination
+          total={salesData.totalCount}
+          page={pageParam}
+          pageSize={sizeParam}
+        />
       </div>
     </div>
   );

@@ -23,6 +23,7 @@ export function CustomersSearch() {
       } else {
         params.delete("q");
       }
+      params.delete("page");
       startTransition(() => {
         router.push(`/dashboard/customers?${params.toString()}`);
       });

@@ -22,6 +22,8 @@ export interface SalesData {
   filteredItemRevenue: number | null;
   /** Total quantity sold for the filtered items */
   filteredItemQuantity: number | null;
+  /** Total number of invoices matching the filters (across all pages) */
+  totalCount: number;
 }
 
 /**
@@ -79,12 +81,16 @@ function getDateRange(filter: TimeFilter, customRange?: DateRange): DateRange {
 /**
  * Fetch sales data (invoices) with time-based filtering and optional part/service filtering.
  * Only includes PAID invoices in revenue calculations.
+ *
+ * Summary stats (totalRevenue, totalCount, filtered* metrics) are computed across the
+ * entire filtered set; the `invoices` array is paginated via `from`/`to`.
  */
 export async function getSalesData(
   filter: TimeFilter,
   customRange?: DateRange,
   searchQuery?: string,
-  itemFilter?: ItemFilter
+  itemFilter?: ItemFilter,
+  pagination?: { from: number; to: number }
 ): Promise<SalesData> {
   const supabase = await createClient();
   const dateRange = getDateRange(filter, customRange);
@@ -93,13 +99,11 @@ export async function getSalesData(
   const hasServiceFilter = itemFilter?.serviceNames && itemFilter.serviceNames.length > 0;
   const hasItemFilter = hasPartFilter || hasServiceFilter;
 
-  // If filtering by parts or services, find matching invoice IDs
   let filteredInvoiceIds: string[] | null = null;
   let filteredItemRevenue: number | null = null;
   let filteredItemQuantity: number | null = null;
 
   if (hasItemFilter) {
-    // First get all invoice IDs in the date range
     const { data: dateInvoices } = await supabase
       .from("invoices")
       .select("id")
@@ -109,7 +113,6 @@ export async function getSalesData(
     const dateInvoiceIds = (dateInvoices || []).map((inv) => inv.id);
 
     if (dateInvoiceIds.length > 0) {
-      // Build queries for parts and services separately, then merge results
       const allMatchingItems: { invoice_id: string; total: number; quantity: number }[] = [];
 
       if (hasPartFilter) {
@@ -131,7 +134,6 @@ export async function getSalesData(
         if (serviceItems) allMatchingItems.push(...serviceItems);
       }
 
-      // Get unique invoice IDs and calculate filtered item revenue
       const uniqueIds = new Set<string>();
       let itemRevenue = 0;
       let itemQuantity = 0;
@@ -151,8 +153,45 @@ export async function getSalesData(
     }
   }
 
-  // Fetch all invoices within the date range (both paid and due for display)
-  let query = supabase
+  if (filteredInvoiceIds !== null && filteredInvoiceIds.length === 0) {
+    return {
+      invoices: [],
+      totalRevenue: 0,
+      filteredItemRevenue: 0,
+      filteredItemQuantity: 0,
+      totalCount: 0,
+    };
+  }
+
+  // Summary aggregation over the FULL filtered set (only fields needed for the totals)
+  let summaryQuery = supabase
+    .from("invoices")
+    .select("total, status", { count: "exact" })
+    .gte("created_at", dateRange.from)
+    .lt("created_at", dateRange.to);
+
+  if (searchQuery) {
+    summaryQuery = summaryQuery.or(
+      `invoice_number.ilike.%${searchQuery}%,customer_name.ilike.%${searchQuery}%`
+    );
+  }
+  if (filteredInvoiceIds !== null) {
+    summaryQuery = summaryQuery.in("id", filteredInvoiceIds);
+  }
+
+  const { data: summaryRows, count: totalCount, error: summaryError } = await summaryQuery;
+
+  if (summaryError) {
+    console.error("Error fetching sales summary:", summaryError);
+    throw new Error("Failed to fetch sales data");
+  }
+
+  const totalRevenue = (summaryRows || [])
+    .filter((row) => row.status === "paid")
+    .reduce((sum, row) => sum + Number(row.total), 0);
+
+  // Paginated rows for the table
+  let pageQuery = supabase
     .from("invoices")
     .select("*")
     .gte("created_at", dateRange.from)
@@ -160,39 +199,25 @@ export async function getSalesData(
     .order("created_at", { ascending: false });
 
   if (searchQuery) {
-    query = query.or(
+    pageQuery = pageQuery.or(
       `invoice_number.ilike.%${searchQuery}%,customer_name.ilike.%${searchQuery}%`
     );
   }
-
-  // Apply item filter — only show invoices containing the selected part/service
   if (filteredInvoiceIds !== null) {
-    if (filteredInvoiceIds.length === 0) {
-      // No matching invoices
-      return {
-        invoices: [],
-        totalRevenue: 0,
-        filteredItemRevenue: 0,
-        filteredItemQuantity: 0,
-      };
-    }
-    query = query.in("id", filteredInvoiceIds);
+    pageQuery = pageQuery.in("id", filteredInvoiceIds);
+  }
+  if (pagination) {
+    pageQuery = pageQuery.range(pagination.from, pagination.to);
   }
 
-  const { data: allInvoices, error } = await query;
+  const { data: pageRows, error: pageError } = await pageQuery;
 
-  if (error) {
-    console.error("Error fetching sales data:", error);
+  if (pageError) {
+    console.error("Error fetching sales data:", pageError);
     throw new Error("Failed to fetch sales data");
   }
 
-  // Calculate total revenue from PAID invoices only
-  const totalRevenue = (allInvoices || [])
-    .filter((invoice) => invoice.status === "paid")
-    .reduce((sum, invoice) => sum + Number(invoice.total), 0);
-
-  // Map invoices to include status as-is (no hardcoding to "Paid")
-  const invoicesWithStatus = (allInvoices || []).map((invoice) => ({
+  const invoicesWithStatus = (pageRows || []).map((invoice) => ({
     ...invoice,
     status: invoice.status === "paid" ? ("Paid" as const) : ("Due" as const),
   }));
@@ -202,6 +227,7 @@ export async function getSalesData(
     totalRevenue,
     filteredItemRevenue,
     filteredItemQuantity,
+    totalCount: totalCount || 0,
   };
 }
 
@@ -213,11 +239,11 @@ export async function getSalesSummary(
   customRange?: DateRange,
   searchQuery?: string
 ) {
-  const { invoices, totalRevenue } = await getSalesData(filter, customRange, searchQuery);
+  const { totalRevenue, totalCount } = await getSalesData(filter, customRange, searchQuery);
 
   return {
     totalRevenue,
-    invoiceCount: invoices.length,
-    averageInvoiceValue: invoices.length > 0 ? totalRevenue / invoices.length : 0,
+    invoiceCount: totalCount,
+    averageInvoiceValue: totalCount > 0 ? totalRevenue / totalCount : 0,
   };
 }

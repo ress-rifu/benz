@@ -23,6 +23,7 @@ export function QuotationsSearch() {
       } else {
         params.delete("q");
       }
+      params.delete("page");
       startTransition(() => {
         router.push(`/dashboard/quotations?${params.toString()}`);
       });

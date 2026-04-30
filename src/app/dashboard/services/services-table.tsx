@@ -7,12 +7,20 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { formatCurrency } from "@/lib/utils";
 import { getServicesWithCategories } from "./actions";
 import { ServiceActions } from "./service-actions";
 
-export async function ServicesTable() {
-    const services = await getServicesWithCategories();
+interface ServicesTableProps {
+    page: number;
+    pageSize: number;
+}
+
+export async function ServicesTable({ page, pageSize }: ServicesTableProps) {
+    const from = (page - 1) * pageSize;
+    const to = page * pageSize - 1;
+    const { rows: services, total } = await getServicesWithCategories({ from, to });
 
     if (services.length === 0) {
         return (
@@ -26,7 +34,7 @@ export async function ServicesTable() {
     }
 
     return (
-        <>
+        <div className="space-y-4">
             {/* Desktop Table */}
             <div className="hidden md:block rounded-lg border bg-white">
                 <Table>
@@ -105,6 +113,8 @@ export async function ServicesTable() {
                     </div>
                 ))}
             </div>
-        </>
+
+            <Pagination total={total} page={page} pageSize={pageSize} />
+        </div>
     );
 }

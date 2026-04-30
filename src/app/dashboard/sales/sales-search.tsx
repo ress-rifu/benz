@@ -24,6 +24,7 @@ export function SalesSearch() {
       } else {
         params.delete("q");
       }
+      params.delete("page");
       startTransition(() => {
         router.push(`/dashboard/sales?${params.toString()}`);
       });

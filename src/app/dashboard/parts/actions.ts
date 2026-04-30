@@ -32,8 +32,14 @@ export async function getPartBrands() {
     return data || [];
 }
 
-export async function getPartsWithRelations(searchQuery?: string) {
+export async function getPartsWithRelations(params?: {
+    searchQuery?: string;
+    from?: number;
+    to?: number;
+}) {
     const supabase = await createClient();
+    const { searchQuery, from, to } = params || {};
+
     let query = supabase
         .from("parts")
         .select(`
@@ -48,7 +54,7 @@ export async function getPartsWithRelations(searchQuery?: string) {
         name,
         country_of_origin
       )
-    `)
+    `, { count: "exact" })
         .order("name");
 
     if (searchQuery) {
@@ -58,8 +64,12 @@ export async function getPartsWithRelations(searchQuery?: string) {
         );
     }
 
-    const { data } = await query;
-    return data || [];
+    if (typeof from === "number" && typeof to === "number") {
+        query = query.range(from, to);
+    }
+
+    const { data, count } = await query;
+    return { rows: data || [], total: count || 0 };
 }
 
 export async function createPart(input: PartInput) {

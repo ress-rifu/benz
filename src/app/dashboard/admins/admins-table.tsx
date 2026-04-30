@@ -7,23 +7,32 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
 import { AdminActions } from "./admin-actions";
 import { getUser } from "@/lib/auth/get-user";
 
-async function getAdmins() {
+async function getAdmins({ from, to }: { from: number; to: number }) {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, count } = await supabase
     .from("users")
-    .select("*")
-    .order("created_at", { ascending: false });
-  return data || [];
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+  return { rows: data || [], total: count || 0 };
 }
 
-export async function AdminsTable() {
-  const [admins, currentUser] = await Promise.all([
-    getAdmins(),
+interface AdminsTableProps {
+  page: number;
+  pageSize: number;
+}
+
+export async function AdminsTable({ page, pageSize }: AdminsTableProps) {
+  const from = (page - 1) * pageSize;
+  const to = page * pageSize - 1;
+  const [{ rows: admins, total }, currentUser] = await Promise.all([
+    getAdmins({ from, to }),
     getUser(),
   ]);
 
@@ -39,7 +48,7 @@ export async function AdminsTable() {
   }
 
   return (
-    <>
+    <div className="space-y-4">
       {/* Desktop Table */}
       <div className="hidden md:block rounded-lg border bg-white">
         <Table>
@@ -125,6 +134,8 @@ export async function AdminsTable() {
           </div>
         ))}
       </div>
-    </>
+
+      <Pagination total={total} page={page} pageSize={pageSize} />
+    </div>
   );
 }

@@ -7,12 +7,21 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { formatCurrency } from "@/lib/utils";
 import { getPartsWithRelations } from "./actions";
 import { PartActions } from "./part-actions";
 
-export async function PartsTable({ searchQuery }: { searchQuery?: string }) {
-    const parts = await getPartsWithRelations(searchQuery);
+interface PartsTableProps {
+    searchQuery?: string;
+    page: number;
+    pageSize: number;
+}
+
+export async function PartsTable({ searchQuery, page, pageSize }: PartsTableProps) {
+    const from = (page - 1) * pageSize;
+    const to = page * pageSize - 1;
+    const { rows: parts, total } = await getPartsWithRelations({ searchQuery, from, to });
 
     if (parts.length === 0) {
         return (
@@ -30,7 +39,7 @@ export async function PartsTable({ searchQuery }: { searchQuery?: string }) {
     }
 
     return (
-        <>
+        <div className="space-y-4">
             {/* Desktop Table */}
             <div className="hidden lg:block rounded-lg border bg-white overflow-x-auto">
                 <Table>
@@ -145,6 +154,8 @@ export async function PartsTable({ searchQuery }: { searchQuery?: string }) {
                     );
                 })}
             </div>
-        </>
+
+            <Pagination total={total} page={page} pageSize={pageSize} />
+        </div>
     );
 }

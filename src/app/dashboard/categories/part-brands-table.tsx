@@ -9,6 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { PartBrandActions } from "./part-brand-actions";
 import type { Tables } from "@/types/database";
 
@@ -24,9 +25,12 @@ interface PartBrandsTableProps {
     brands: PartBrand[];
     categories: Tables<"part_categories">[];
     isSuperAdmin: boolean;
+    total: number;
+    page: number;
+    pageSize: number;
 }
 
-export function PartBrandsTable({ brands, categories, isSuperAdmin }: PartBrandsTableProps) {
+export function PartBrandsTable({ brands, categories, isSuperAdmin, total, page, pageSize }: PartBrandsTableProps) {
     if (brands.length === 0) {
         return (
             <div className="rounded-lg border border-dashed border-slate-300 p-12 text-center">
@@ -41,7 +45,7 @@ export function PartBrandsTable({ brands, categories, isSuperAdmin }: PartBrands
     }
 
     return (
-        <>
+        <div className="space-y-4">
             {/* Mobile Card View */}
             <div className="space-y-3 md:hidden">
                 {brands.map((brand) => (
@@ -128,6 +132,13 @@ export function PartBrandsTable({ brands, categories, isSuperAdmin }: PartBrands
                     </TableBody>
                 </Table>
             </div>
-        </>
+
+            <Pagination
+                total={total}
+                page={page}
+                pageSize={pageSize}
+                pageKey="brandsPage"
+            />
+        </div>
     );
 }

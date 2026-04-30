@@ -7,15 +7,20 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { getServiceCategories } from "./actions";
+import { Pagination } from "@/components/ui/pagination";
+import { getServiceCategoriesPaged } from "./actions";
 import { ServiceCategoryActions } from "./service-category-actions";
 
 interface ServiceCategoriesTableProps {
     isSuperAdmin: boolean;
+    page: number;
+    pageSize: number;
 }
 
-export async function ServiceCategoriesTable({ isSuperAdmin }: ServiceCategoriesTableProps) {
-    const categories = await getServiceCategories();
+export async function ServiceCategoriesTable({ isSuperAdmin, page, pageSize }: ServiceCategoriesTableProps) {
+    const from = (page - 1) * pageSize;
+    const to = page * pageSize - 1;
+    const { rows: categories, total } = await getServiceCategoriesPaged({ from, to });
 
     if (categories.length === 0) {
         return (
@@ -31,7 +36,7 @@ export async function ServiceCategoriesTable({ isSuperAdmin }: ServiceCategories
     }
 
     return (
-        <>
+        <div className="space-y-4">
             {/* Mobile Card View */}
             <div className="space-y-3 md:hidden">
                 {categories.map((category: any) => (
@@ -106,6 +111,13 @@ export async function ServiceCategoriesTable({ isSuperAdmin }: ServiceCategories
                     </TableBody>
                 </Table>
             </div>
-        </>
+
+            <Pagination
+                total={total}
+                page={page}
+                pageSize={pageSize}
+                pageKey="servicesPage"
+            />
+        </div>
     );
 }

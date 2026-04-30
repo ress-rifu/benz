@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { FileX, Eye } from "lucide-react";
 import type { Tables } from "@/types/database";
@@ -21,9 +22,19 @@ interface InvoicesTableClientProps {
   })[];
   isSuperAdmin: boolean;
   hasFilters: boolean;
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
-export function InvoicesTableClient({ invoices, isSuperAdmin, hasFilters }: InvoicesTableClientProps) {
+export function InvoicesTableClient({
+  invoices,
+  isSuperAdmin,
+  hasFilters,
+  total,
+  page,
+  pageSize,
+}: InvoicesTableClientProps) {
   if (invoices.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-slate-300 p-12 text-center">
@@ -48,7 +59,7 @@ export function InvoicesTableClient({ invoices, isSuperAdmin, hasFilters }: Invo
   }
 
   return (
-    <>
+    <div className="space-y-4">
       {/* Desktop Table */}
       <div className="hidden md:block rounded-lg border bg-white">
         <Table>
@@ -148,7 +159,9 @@ export function InvoicesTableClient({ invoices, isSuperAdmin, hasFilters }: Invo
           </Link>
         ))}
       </div>
-    </>
+
+      <Pagination total={total} page={page} pageSize={pageSize} />
+    </div>
   );
 }
 

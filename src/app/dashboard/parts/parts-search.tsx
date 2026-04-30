@@ -23,6 +23,7 @@ export function PartsSearch() {
             } else {
                 params.delete("q");
             }
+            params.delete("page");
             startTransition(() => {
                 router.push(`/dashboard/parts?${params.toString()}`);
             });

@@ -22,6 +22,7 @@ export function InvoicesSearch() {
       } else {
         params.delete("q");
       }
+      params.delete("page");
       startTransition(() => {
         router.push(`/dashboard/invoices?${params.toString()}`);
       });

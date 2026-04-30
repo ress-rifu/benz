@@ -7,6 +7,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { getCustomers } from "./actions";
 import { CustomerActions } from "./customer-actions";
 import { AlertTriangle, DollarSign } from "lucide-react";
@@ -19,8 +20,16 @@ function formatCurrency(amount: number): string {
     }).format(amount).replace("BDT", "BDT ");
 }
 
-export async function CustomersTable({ searchQuery }: { searchQuery?: string }) {
-    const customers = await getCustomers(searchQuery);
+interface CustomersTableProps {
+    searchQuery?: string;
+    page: number;
+    pageSize: number;
+}
+
+export async function CustomersTable({ searchQuery, page, pageSize }: CustomersTableProps) {
+    const from = (page - 1) * pageSize;
+    const to = page * pageSize - 1;
+    const { rows: customers, total } = await getCustomers({ searchQuery, from, to });
 
     if (customers.length === 0) {
         return (
@@ -34,7 +43,7 @@ export async function CustomersTable({ searchQuery }: { searchQuery?: string }) 
     }
 
     return (
-        <>
+        <div className="space-y-4">
             {/* Desktop Table */}
             <div className="hidden md:block rounded-lg border bg-white">
                 <Table>
@@ -152,6 +161,8 @@ export async function CustomersTable({ searchQuery }: { searchQuery?: string }) 
                     </div>
                 ))}
             </div>
-        </>
+
+            <Pagination total={total} page={page} pageSize={pageSize} />
+        </div>
     );
 }

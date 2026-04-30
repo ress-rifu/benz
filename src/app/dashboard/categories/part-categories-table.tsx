@@ -7,15 +7,20 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { getPartCategories } from "./actions";
+import { Pagination } from "@/components/ui/pagination";
+import { getPartCategoriesPaged } from "./actions";
 import { PartCategoryActions } from "./part-category-actions";
 
 interface PartCategoriesTableProps {
     isSuperAdmin: boolean;
+    page: number;
+    pageSize: number;
 }
 
-export async function PartCategoriesTable({ isSuperAdmin }: PartCategoriesTableProps) {
-    const categories = await getPartCategories();
+export async function PartCategoriesTable({ isSuperAdmin, page, pageSize }: PartCategoriesTableProps) {
+    const from = (page - 1) * pageSize;
+    const to = page * pageSize - 1;
+    const { rows: categories, total } = await getPartCategoriesPaged({ from, to });
 
     if (categories.length === 0) {
         return (
@@ -31,7 +36,7 @@ export async function PartCategoriesTable({ isSuperAdmin }: PartCategoriesTableP
     }
 
     return (
-        <>
+        <div className="space-y-4">
             {/* Mobile Card View */}
             <div className="space-y-3 md:hidden">
                 {categories.map((category: any) => (
@@ -106,6 +111,13 @@ export async function PartCategoriesTable({ isSuperAdmin }: PartCategoriesTableP
                     </TableBody>
                 </Table>
             </div>
-        </>
+
+            <Pagination
+                total={total}
+                page={page}
+                pageSize={pageSize}
+                pageKey="partsPage"
+            />
+        </div>
     );
 }

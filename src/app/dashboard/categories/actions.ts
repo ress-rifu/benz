@@ -26,6 +26,16 @@ export async function getServiceCategories() {
     return data || [];
 }
 
+export async function getServiceCategoriesPaged({ from, to }: { from: number; to: number }) {
+    const supabase = await createClient();
+    const { data, count } = await supabase
+        .from("service_categories")
+        .select("*", { count: "exact" })
+        .order("name")
+        .range(from, to);
+    return { rows: data || [], total: count || 0 };
+}
+
 export async function createServiceCategory(input: CategoryInput) {
     try {
         await requireSuperAdmin();
@@ -125,6 +135,16 @@ export async function getPartCategories() {
         .select("*")
         .order("name");
     return data || [];
+}
+
+export async function getPartCategoriesPaged({ from, to }: { from: number; to: number }) {
+    const supabase = await createClient();
+    const { data, count } = await supabase
+        .from("part_categories")
+        .select("*", { count: "exact" })
+        .order("name")
+        .range(from, to);
+    return { rows: data || [], total: count || 0 };
 }
 
 export async function createPartCategory(input: CategoryInput) {
@@ -242,6 +262,23 @@ export async function getPartBrands() {
         `)
         .order("name");
     return data || [];
+}
+
+export async function getPartBrandsPaged({ from, to }: { from: number; to: number }) {
+    const supabase = await createClient();
+    const { data, count } = await supabase
+        .from("part_brands")
+        .select(`
+            *,
+            part_categories (
+                id,
+                name,
+                name_bn
+            )
+        `, { count: "exact" })
+        .order("name")
+        .range(from, to);
+    return { rows: data || [], total: count || 0 };
 }
 
 export async function getPartBrandsByCategory(categoryId: string) {

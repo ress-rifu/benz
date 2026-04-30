@@ -20,9 +20,14 @@ export async function getServiceCategories() {
     return data || [];
 }
 
-export async function getServicesWithCategories() {
+export async function getServicesWithCategories(params?: {
+    from?: number;
+    to?: number;
+}) {
     const supabase = await createClient();
-    const { data } = await supabase
+    const { from, to } = params || {};
+
+    let query = supabase
         .from("services")
         .select(`
       *,
@@ -31,9 +36,15 @@ export async function getServicesWithCategories() {
         name,
         name_bn
       )
-    `)
+    `, { count: "exact" })
         .order("name");
-    return data || [];
+
+    if (typeof from === "number" && typeof to === "number") {
+        query = query.range(from, to);
+    }
+
+    const { data, count } = await query;
+    return { rows: data || [], total: count || 0 };
 }
 
 export async function createService(input: ServiceInput) {
