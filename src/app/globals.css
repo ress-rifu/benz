@@ -135,6 +135,13 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  html:has(#dashboard-layout),
+  body:has(#dashboard-layout) {
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
 }
 
 @media print {
