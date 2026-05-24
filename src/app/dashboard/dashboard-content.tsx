@@ -75,13 +75,13 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
       supabase.from("parts").select("id, quantity, min_stock_level").eq("is_active", true),
       supabase.from("invoices").select("*", { count: "exact", head: true }),
       supabase.from("invoices").select("total, status, advance_amount"),
-      supabase.from("invoices").select("total, status")
+      supabase.from("invoices").select("total, status, advance_amount")
         .gte("created_at", last7Days.from)
         .lt("created_at", last7Days.to),
-      supabase.from("invoices").select("total, status")
+      supabase.from("invoices").select("total, status, advance_amount")
         .gte("created_at", thisMonth.from)
         .lt("created_at", thisMonth.to),
-      supabase.from("invoices").select("total, status")
+      supabase.from("invoices").select("total, status, advance_amount")
         .gte("created_at", prevMonth.from)
         .lt("created_at", prevMonth.to),
       supabase.from("customers").select("*", { count: "exact", head: true }),
@@ -92,34 +92,42 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
         .order("created_at", { ascending: false })
         .limit(5),
       supabase.from("invoices")
-        .select("total, status, created_at")
+        .select("total, status, advance_amount, created_at")
         .gte("created_at", last7Days.from)
         .lt("created_at", last7Days.to)
         .order("created_at", { ascending: true }),
     ]);
 
-    // Calculate revenue from PAID invoices only
-    const totalRevenue = allInvoicesResult.data?.filter(inv => inv.status === "paid")
-      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+    // Calculate revenue from PAID invoices (total) + DUE invoices (advance_amount)
+    const totalRevenue = (allInvoicesResult.data?.filter(inv => inv.status === "paid")
+      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0) +
+      (allInvoicesResult.data?.filter(inv => inv.status === "due")
+      .reduce((sum, inv) => sum + Number((inv as any).advance_amount || 0), 0) || 0);
 
     // Calculate outstanding balance from DUE invoices (total - advance)
     const outstandingBalance = allInvoicesResult.data?.filter(inv => inv.status === "due")
       .reduce((sum, inv) => sum + Number(inv.total) - Number((inv as any).advance_amount || 0), 0) || 0;
 
-    const weeklyRevenue = weeklyInvoicesResult.data?.filter(inv => inv.status === "paid")
-      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+    const weeklyRevenue = (weeklyInvoicesResult.data?.filter(inv => inv.status === "paid")
+      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0) +
+      (weeklyInvoicesResult.data?.filter(inv => inv.status === "due")
+      .reduce((sum, inv) => sum + Number((inv as any).advance_amount || 0), 0) || 0);
 
-    const monthlyRevenue = monthlyInvoicesResult.data?.filter(inv => inv.status === "paid")
-      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+    const monthlyRevenue = (monthlyInvoicesResult.data?.filter(inv => inv.status === "paid")
+      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0) +
+      (monthlyInvoicesResult.data?.filter(inv => inv.status === "due")
+      .reduce((sum, inv) => sum + Number((inv as any).advance_amount || 0), 0) || 0);
 
-    const previousMonthRevenue = prevMonthInvoicesResult.data?.filter(inv => inv.status === "paid")
-      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+    const previousMonthRevenue = (prevMonthInvoicesResult.data?.filter(inv => inv.status === "paid")
+      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0) +
+      (prevMonthInvoicesResult.data?.filter(inv => inv.status === "due")
+      .reduce((sum, inv) => sum + Number((inv as any).advance_amount || 0), 0) || 0);
 
     const revenueGrowth = previousMonthRevenue > 0
       ? ((monthlyRevenue - previousMonthRevenue) / previousMonthRevenue) * 100
       : 0;
 
-    // Process daily revenue for last 7 days (paid invoices only).
+    // Process daily revenue for last 7 days (paid invoices total + due invoices advance_amount).
     // Keys come from the business TZ so an invoice created at e.g. 1 AM Dhaka
     // doesn't get bucketed into the previous weekday in UTC.
     const orderedKeys = getLastNWeekdayKeys(7);
@@ -129,10 +137,17 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
     }
 
     dailyInvoicesResult.data?.forEach((inv) => {
+      let revenueContrib = 0;
       if (inv.status === "paid") {
+        revenueContrib = Number(inv.total);
+      } else if (inv.status === "due" && (inv as any).advance_amount) {
+        revenueContrib = Number((inv as any).advance_amount);
+      }
+
+      if (revenueContrib > 0) {
         const key = getBusinessWeekdayKey(inv.created_at);
         if (dailyData[key]) {
-          dailyData[key].revenue += Number(inv.total);
+          dailyData[key].revenue += revenueContrib;
           dailyData[key].invoices += 1;
         }
       }

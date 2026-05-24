@@ -512,12 +512,12 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                 {(invoice.advance_amount || 0) > 0 && (
                   <>
                     <div className="flex border-b border-slate-300">
-                      <div className="px-3 py-1.5 border-r border-slate-300 font-semibold bg-green-50 text-green-700 w-32">Advance</div>
-                      <div className="px-3 py-1.5 w-28 text-green-700">{(invoice.advance_amount || 0).toFixed(2)}</div>
+                      <div className="px-3 py-1.5 border-r border-slate-300 font-semibold bg-slate-50 w-32">Advance</div>
+                      <div className="px-3 py-1.5 w-28">{(invoice.advance_amount || 0).toFixed(2)}</div>
                     </div>
-                    <div className="flex bg-orange-50">
-                      <div className="px-3 py-1.5 border-r border-slate-300 font-bold text-orange-700 w-32">Due Amount</div>
-                      <div className="px-3 py-1.5 w-28 font-bold text-orange-700">{(invoice.total - (invoice.advance_amount || 0)).toFixed(2)}</div>
+                    <div className="flex bg-slate-100">
+                      <div className="px-3 py-1.5 border-r border-slate-300 font-bold w-32">Due Amount</div>
+                      <div className="px-3 py-1.5 w-28 font-bold">{(invoice.total - (invoice.advance_amount || 0)).toFixed(2)}</div>
                     </div>
                   </>
                 )}

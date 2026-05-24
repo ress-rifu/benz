@@ -710,14 +710,14 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                 <>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Advance</span>
-                    <span className="font-medium text-green-600">
+                    <span className="font-medium">
                       -{formatCurrency(watchedAdvance)}
                     </span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
-                    <span className="text-orange-600">Due Amount</span>
-                    <span className="text-orange-600">{formatCurrency(dueAmount)}</span>
+                    <span>Due Amount</span>
+                    <span>{formatCurrency(dueAmount)}</span>
                   </div>
                 </>
               )}
