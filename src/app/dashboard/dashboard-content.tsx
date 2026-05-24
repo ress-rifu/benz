@@ -194,9 +194,15 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
 }
 
 import { DashboardContentClient } from "./components/dashboard-content-client";
+import { getOrSet } from "@/lib/redis/cache";
+import { CACHE_KEYS, CACHE_TTL } from "@/lib/redis/client";
 
 export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) {
-  const summary = await getDashboardSummary();
+  const summary = await getOrSet(
+    CACHE_KEYS.DASHBOARD_SUMMARY,
+    () => getDashboardSummary(),
+    CACHE_TTL.SHORT
+  );
 
   return <DashboardContentClient isSuperAdmin={isSuperAdmin} summary={summary} />;
 }

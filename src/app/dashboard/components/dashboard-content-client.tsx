@@ -10,9 +10,21 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
-import { RevenueBarChart } from "./revenue-charts";
 import { FinanceCards } from "./finance-cards";
 import { useLanguage } from "@/lib/language/language-context";
+import dynamic from "next/dynamic";
+
+const RevenueBarChart = dynamic(
+  () => import("./revenue-charts").then((mod) => mod.RevenueBarChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[360px] w-full rounded-2xl border border-slate-100 bg-slate-50/50 flex items-center justify-center animate-pulse">
+        <div className="h-6 w-32 bg-slate-200/80 rounded-md" />
+      </div>
+    ),
+  }
+);
 
 interface DashboardSummary {
   lowStockItems: number;
