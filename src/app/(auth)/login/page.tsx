@@ -9,35 +9,35 @@ export default function LoginPage() {
   const { t } = useLanguage();
   
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 text-slate-800 font-sans relative overflow-hidden">
+    <div className="min-h-[100dvh] flex flex-col md:flex-row bg-slate-50 text-slate-800 font-sans relative overflow-y-auto md:overflow-hidden">
       {/* Background Decorative Orbs */}
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-amber-600/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Language Selector */}
-      <div className="absolute top-6 right-6 z-50">
-        <LanguageToggle />
-      </div>
-
       {/* Left Column: Login Form Panel */}
-      <div className="w-full md:w-[45%] lg:w-[40%] min-h-screen flex flex-col justify-between p-5 sm:p-12 md:p-16 z-10 bg-white/70 backdrop-blur-md border-r border-slate-200/80 overflow-y-auto">
-        {/* Header Branding */}
-        <div className="flex items-center gap-3 mb-8 md:mb-0">
-          <img
-            src="/logo.webp"
-            alt="Benz Automobile Logo"
-            className="w-10 h-10 rounded-xl object-contain shadow-xs"
-          />
-          <div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent tracking-tight">
-              Benz Automobile
-            </h1>
-            <p className="text-[10px] text-amber-600 font-semibold tracking-widest uppercase">Workshop System</p>
+      <div className="w-full md:w-[45%] lg:w-[40%] min-h-[100dvh] md:h-screen flex flex-col justify-between p-6 sm:p-12 md:p-16 z-10 bg-white/70 backdrop-blur-md border-r border-slate-200/80 md:overflow-y-auto">
+        {/* Header Branding & Language Selector */}
+        <div className="flex items-center justify-between gap-4 w-full mb-8 md:mb-0">
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo.webp"
+              alt="Benz Automobile Logo"
+              className="w-10 h-10 rounded-xl object-contain shadow-xs"
+            />
+            <div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent tracking-tight">
+                Benz Automobile
+              </h1>
+              <p className="text-[10px] text-amber-600 font-semibold tracking-widest uppercase">Workshop System</p>
+            </div>
+          </div>
+          <div className="flex-shrink-0">
+            <LanguageToggle />
           </div>
         </div>
 
         {/* Main Content Area */}
-        <div className="w-full max-w-sm mx-auto my-6 md:my-auto space-y-6 md:space-y-8">
+        <div className="w-full max-w-sm mx-auto my-auto py-8 space-y-6 md:space-y-8">
           <div className="space-y-2">
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
               Welcome back

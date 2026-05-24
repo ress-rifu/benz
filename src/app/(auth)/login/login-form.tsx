@@ -51,7 +51,7 @@ export function LoginForm() {
             id="identifier"
             type="text"
             placeholder="you@example.com or username"
-            className="w-full bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-amber-500/60 focus:ring-amber-500/10 focus-visible:ring-amber-500/20 focus-visible:ring-offset-0 focus-visible:border-amber-500/60 rounded-xl h-11 pl-11 pr-4 transition-all duration-200"
+            className="w-full bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-amber-500/60 focus:ring-amber-500/10 focus-visible:ring-amber-500/20 focus-visible:ring-offset-0 focus-visible:border-amber-500/60 rounded-xl h-11 pl-11 pr-4 text-base md:text-sm transition-all duration-200"
             {...register("identifier")}
           />
         </div>
@@ -73,7 +73,7 @@ export function LoginForm() {
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
-            className="w-full bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-amber-500/60 focus:ring-amber-500/10 focus-visible:ring-amber-500/20 focus-visible:ring-offset-0 focus-visible:border-amber-500/60 rounded-xl h-11 pl-11 pr-11 transition-all duration-200"
+            className="w-full bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-amber-500/60 focus:ring-amber-500/10 focus-visible:ring-amber-500/20 focus-visible:ring-offset-0 focus-visible:border-amber-500/60 rounded-xl h-11 pl-11 pr-11 text-base md:text-sm transition-all duration-200"
             {...register("password")}
           />
           <button
