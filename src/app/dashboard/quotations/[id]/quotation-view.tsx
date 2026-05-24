@@ -537,6 +537,8 @@ export function QuotationView({ quotation, items, settings, isSuperAdmin, create
           className="print-only-watermark"
           style={{
             position: 'fixed',
+            bottom: `calc(2mm - ${settings.margin_bottom ?? 10}mm)`,
+            right: `calc(2mm - ${settings.margin_right ?? 10}mm)`,
             fontSize: `${settings.watermark_size ?? 4}px`,
             lineHeight: `${settings.watermark_size ?? 4}px`,
             margin: '0',
