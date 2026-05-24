@@ -28,6 +28,8 @@ interface InvoiceSettings {
   footer_image_url: string | null;
   show_footer_image: boolean;
   font_size: string;
+  vat_reg_no: string | null;
+  show_vat_reg_no: boolean;
 }
 
 const DEFAULT_SETTINGS: InvoiceSettings = {
@@ -53,6 +55,8 @@ const DEFAULT_SETTINGS: InvoiceSettings = {
   footer_image_url: null,
   show_footer_image: true,
   font_size: "text-sm",
+  vat_reg_no: null,
+  show_vat_reg_no: true,
 };
 
 async function getInvoice(id: string) {

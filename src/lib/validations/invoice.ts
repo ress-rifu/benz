@@ -30,7 +30,7 @@ export const invoiceSchema = z.object({
 });
 
 export const invoiceSettingsSchema = z.object({
-  logo_url: z.string().url().optional().nullable(),
+  logo_url: z.string().url().optional().nullable().or(z.literal("")),
   header_text: z.string().max(500).optional().nullable(),
   footer_text: z.string().max(500).optional().nullable(),
   primary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid color format"),
@@ -47,11 +47,13 @@ export const invoiceSettingsSchema = z.object({
   margin_right: z.number().int().min(0).max(50),
   margin_bottom: z.number().int().min(0).max(50),
   margin_left: z.number().int().min(0).max(50),
-  header_image_url: z.string().url().optional().nullable(),
+  header_image_url: z.string().url().optional().nullable().or(z.literal("")),
   show_header_image: z.boolean(),
-  footer_image_url: z.string().url().optional().nullable(),
+  footer_image_url: z.string().url().optional().nullable().or(z.literal("")),
   show_footer_image: z.boolean(),
   font_size: z.string(),
+  vat_reg_no: z.string().max(100).optional().nullable().or(z.literal("")),
+  show_vat_reg_no: z.boolean(),
 });
 
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;

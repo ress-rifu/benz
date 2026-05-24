@@ -42,6 +42,8 @@ async function getInvoiceSettings(): Promise<Tables<"invoice_settings">> {
           footer_image_url: null,
           show_footer_image: true,
           font_size: "text-sm",
+          vat_reg_no: null,
+          show_vat_reg_no: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }

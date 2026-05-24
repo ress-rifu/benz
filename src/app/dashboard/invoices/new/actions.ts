@@ -28,6 +28,8 @@ async function getInvoiceSettings(supabase: Awaited<ReturnType<typeof createClie
     show_customer_email: true,
     show_customer_phone: true,
     show_customer_address: true,
+    vat_reg_no: null,
+    show_vat_reg_no: true,
   };
 }
 

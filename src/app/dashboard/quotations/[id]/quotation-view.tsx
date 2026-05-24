@@ -46,6 +46,8 @@ interface InvoiceSettings {
   footer_image_url: string | null;
   show_footer_image: boolean;
   font_size: string;
+  vat_reg_no: string | null;
+  show_vat_reg_no: boolean;
 }
 
 // Convert number to words for quotation amount
@@ -293,6 +295,12 @@ export function QuotationView({ quotation, items, settings, isSuperAdmin, create
                 <div className="flex">
                   <span className="font-semibold w-32">Mobile Number</span>
                   <span>: {quotation.customer_phone}</span>
+                </div>
+              )}
+              {settings.show_vat_reg_no && settings.vat_reg_no && (
+                <div className="flex">
+                  <span className="font-semibold w-32">VAT REG NO.(BIN)</span>
+                  <span>: {settings.vat_reg_no}</span>
                 </div>
               )}
             </div>

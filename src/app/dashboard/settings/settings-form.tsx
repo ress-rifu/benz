@@ -71,6 +71,8 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       footer_image_url: settings.footer_image_url,
       show_footer_image: settings.show_footer_image ?? true,
       font_size: settings.font_size ?? "text-sm",
+      vat_reg_no: settings.vat_reg_no || "",
+      show_vat_reg_no: settings.show_vat_reg_no ?? true,
     },
   });
 
@@ -297,6 +299,22 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                   <SelectItem value="text-xl">Extra Large</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            
+            <Separator />
+
+            <div className="space-y-2">
+              <Label htmlFor="vat_reg_no">VAT REG NO.(BIN)</Label>
+              <Input
+                id="vat_reg_no"
+                placeholder="e.g., 123456789-0101"
+                {...register("vat_reg_no")}
+              />
+              {errors.vat_reg_no && (
+                <p className="text-sm text-red-500">
+                  {errors.vat_reg_no.message}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -608,6 +626,19 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                 checked={watch("show_vehicle_license")}
                 onCheckedChange={(checked) =>
                   setValue("show_vehicle_license", checked)
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="show_vat_reg_no" className="cursor-pointer">
+                VAT REG NO.(BIN)
+              </Label>
+              <Switch
+                id="show_vat_reg_no"
+                checked={watch("show_vat_reg_no")}
+                onCheckedChange={(checked) =>
+                  setValue("show_vat_reg_no", checked)
                 }
               />
             </div>

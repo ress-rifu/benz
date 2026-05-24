@@ -49,6 +49,8 @@ export async function updateInvoiceSettings(
         footer_image_url: parsed.data.footer_image_url,
         show_footer_image: parsed.data.show_footer_image,
         font_size: parsed.data.font_size,
+        vat_reg_no: parsed.data.vat_reg_no || null,
+        show_vat_reg_no: parsed.data.show_vat_reg_no,
       })
       .eq("id", id);
 

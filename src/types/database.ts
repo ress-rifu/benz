@@ -251,6 +251,8 @@ export interface Database {
           footer_image_url: string | null;
           show_footer_image: boolean;
           font_size: string;
+          vat_reg_no: string | null;
+          show_vat_reg_no: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -278,6 +280,8 @@ export interface Database {
           footer_image_url?: string | null;
           show_footer_image?: boolean;
           font_size?: string;
+          vat_reg_no?: string | null;
+          show_vat_reg_no?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -305,6 +309,8 @@ export interface Database {
           footer_image_url?: string | null;
           show_footer_image?: boolean;
           font_size?: string;
+          vat_reg_no?: string | null;
+          show_vat_reg_no?: boolean;
           created_at?: string;
           updated_at?: string;
         };

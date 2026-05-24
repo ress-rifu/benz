@@ -33,6 +33,7 @@ interface DashboardSummary {
   totalCustomers: number;
   totalServices: number;
   totalParts: number;
+  totalInventoryValue: number;
   weeklyRevenue: number;
   monthlyRevenue: number;
   previousMonthRevenue: number;
@@ -85,7 +86,7 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
         .lt("created_at", prevMonth.to),
       supabase.from("customers").select("*", { count: "exact", head: true }),
       supabase.from("services").select("*", { count: "exact", head: true }),
-      supabase.from("parts").select("*", { count: "exact", head: true }),
+      supabase.from("parts").select("quantity, cost_price").eq("is_active", true),
       supabase.from("invoices")
         .select("id, invoice_number, customer_name, total, status, created_at")
         .order("created_at", { ascending: false })
@@ -148,6 +149,12 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
       (part) => part.quantity < (part.min_stock_level || 5)
     ).length || 0;
 
+    const totalParts = partsResult.data?.length || 0;
+    const totalInventoryValue = partsResult.data?.reduce(
+      (sum, part) => sum + (Number(part.cost_price || 0) * Number(part.quantity || 0)),
+      0
+    ) || 0;
+
     return {
       lowStockItems,
       totalInvoices: invoicesResult.count || 0,
@@ -155,7 +162,8 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
       outstandingBalance,
       totalCustomers: customersResult.count || 0,
       totalServices: servicesResult.count || 0,
-      totalParts: partsResult.count || 0,
+      totalParts,
+      totalInventoryValue,
       weeklyRevenue,
       monthlyRevenue,
       previousMonthRevenue,
@@ -174,6 +182,7 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
       totalCustomers: 0,
       totalServices: 0,
       totalParts: 0,
+      totalInventoryValue: 0,
       weeklyRevenue: 0,
       monthlyRevenue: 0,
       previousMonthRevenue: 0,
@@ -197,6 +206,7 @@ export async function DashboardContent({ isSuperAdmin }: DashboardContentProps) 
           totalRevenue: summary.totalRevenue,
           outstandingBalance: summary.outstandingBalance,
           revenueGrowth: summary.revenueGrowth,
+          totalInventoryValue: summary.totalInventoryValue,
         }} />
       )}
 

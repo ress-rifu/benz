@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const quotationItemSchema = z.object({
   type: z.enum(["part", "service"]),
+  mode: z.enum(["inventory", "manual"]).optional(),
   part_id: z.string().uuid().optional().nullable(),
   description: z.string().min(1, "Description is required"),
   quantity: z.number().int().positive("Quantity must be at least 1"),

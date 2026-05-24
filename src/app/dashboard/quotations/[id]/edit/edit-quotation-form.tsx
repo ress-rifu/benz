@@ -97,15 +97,25 @@ export function EditQuotationForm({ quotation, existingItems, parts, services, c
       tax_rate: quotation.tax_rate,
       discount_amount: quotation.discount_amount,
       notes: quotation.notes || "",
-      items: existingItems.map((item) => ({
-        type: item.type,
-        part_id: item.part_id || undefined,
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        part_model: item.part_model || "",
-        part_serial: item.part_serial || "",
-      })),
+      items: existingItems.map((item) => {
+        let mode: "inventory" | "manual" = "manual";
+        if (item.type === "part") {
+          mode = item.part_id ? "inventory" : "manual";
+        } else {
+          const serviceExists = services.some(s => s.name === item.description);
+          mode = serviceExists ? "inventory" : "manual";
+        }
+        return {
+          type: item.type,
+          mode,
+          part_id: item.part_id || undefined,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          part_model: item.part_model || "",
+          part_serial: item.part_serial || "",
+        };
+      }),
     },
   });
 
@@ -292,6 +302,7 @@ export function EditQuotationForm({ quotation, existingItems, parts, services, c
                 onClick={() =>
                   append({
                     type: "service",
+                    mode: "inventory",
                     description: "",
                     quantity: 1,
                     unit_price: 0,
@@ -309,6 +320,7 @@ export function EditQuotationForm({ quotation, existingItems, parts, services, c
                 onClick={() =>
                   append({
                     type: "part",
+                    mode: "inventory",
                     description: "",
                     quantity: 1,
                     unit_price: 0,
@@ -325,6 +337,7 @@ export function EditQuotationForm({ quotation, existingItems, parts, services, c
         <CardContent className="space-y-4">
           {fields.map((field, index) => {
             const itemType = watch(`items.${index}.type`);
+            const itemMode = watch(`items.${index}.mode`) || "inventory";
             const quantity = watch(`items.${index}.quantity`) || (itemType === "service" ? 1 : 0);
             const unitPrice = watch(`items.${index}.unit_price`) || 0;
             const lineTotal = quantity * unitPrice;
@@ -332,12 +345,28 @@ export function EditQuotationForm({ quotation, existingItems, parts, services, c
             return (
               <div
                 key={field.id}
-                className="rounded-lg border p-3 sm:p-4"
+                className="relative rounded-lg border p-3 sm:p-4 bg-slate-50/30"
               >
                 {/* Mobile Layout */}
                 <div className="flex flex-col gap-3 sm:hidden">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
+                  <div className="flex items-center justify-between pb-2 border-b border-dashed border-slate-200">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Item #{index + 1}</span>
+                    {fields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50/50"
+                        onClick={() => remove(index)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
                       <Label className="text-xs">Type</Label>
                       <Select
                         value={itemType}
@@ -360,40 +389,59 @@ export function EditQuotationForm({ quotation, existingItems, parts, services, c
                         </SelectContent>
                       </Select>
                     </div>
-                    {fields.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="shrink-0 mt-5"
-                        onClick={() => remove(index)}
+
+                    <div>
+                      <Label className="text-xs">Source</Label>
+                      <Select
+                        value={itemMode}
+                        onValueChange={(value: "inventory" | "manual") => {
+                          setValue(`items.${index}.mode`, value);
+                          setValue(`items.${index}.description`, "");
+                          setValue(`items.${index}.unit_price`, 0);
+                          setValue(`items.${index}.part_id`, undefined);
+                          setSelectedItemIds((prev) => ({ ...prev, [index]: "" }));
+                        }}
                       >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    )}
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="inventory">Inventory</SelectItem>
+                          <SelectItem value="manual">Manual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div>
                     <Label className="text-xs">Description</Label>
-                    {itemType === "part" ? (
-                      <SearchableSelect
-                        options={partOptionsMobile}
-                        value={selectedItemIds[index] || ""}
-                        onValueChange={(value) => handlePartSelect(index, value)}
-                        placeholder="Select a part"
-                        searchPlaceholder="Search parts..."
-                        emptyMessage="No parts found."
-                        triggerClassName="h-9"
-                      />
+                    {itemMode === "inventory" ? (
+                      itemType === "part" ? (
+                        <SearchableSelect
+                          options={partOptionsMobile}
+                          value={selectedItemIds[index] || ""}
+                          onValueChange={(value) => handlePartSelect(index, value)}
+                          placeholder="Select a part"
+                          searchPlaceholder="Search parts..."
+                          emptyMessage="No parts found."
+                          triggerClassName="h-9"
+                        />
+                      ) : (
+                        <SearchableSelect
+                          options={serviceOptionsMobile}
+                          value={selectedItemIds[index] || ""}
+                          onValueChange={(value) => handleServiceSelect(index, value)}
+                          placeholder="Select a service"
+                          searchPlaceholder="Search services..."
+                          emptyMessage="No services found."
+                          triggerClassName="h-9"
+                        />
+                      )
                     ) : (
-                      <SearchableSelect
-                        options={serviceOptionsMobile}
-                        value={selectedItemIds[index] || ""}
-                        onValueChange={(value) => handleServiceSelect(index, value)}
-                        placeholder="Select a service"
-                        searchPlaceholder="Search services..."
-                        emptyMessage="No services found."
-                        triggerClassName="h-9"
+                      <Input
+                        placeholder={itemType === "part" ? "Enter custom part name..." : "Enter custom service name..."}
+                        className="h-9"
+                        {...register(`items.${index}.description`)}
                       />
                     )}
                   </div>
@@ -425,6 +473,7 @@ export function EditQuotationForm({ quotation, existingItems, parts, services, c
                     </div>
                   </div>
 
+                  {/* Model and Serial fields - Mobile (only for parts) */}
                   {itemType === "part" && (
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-dashed">
                       <div>
@@ -448,7 +497,7 @@ export function EditQuotationForm({ quotation, existingItems, parts, services, c
                 </div>
 
                 {/* Desktop Layout */}
-                <div className="hidden sm:grid gap-4 sm:grid-cols-12">
+                <div className="hidden sm:grid gap-4 sm:grid-cols-12 items-start">
                   <div className="sm:col-span-2">
                     <Label>Type</Label>
                     <Select
@@ -473,32 +522,62 @@ export function EditQuotationForm({ quotation, existingItems, parts, services, c
                     </Select>
                   </div>
 
-                  <div className={itemType === "part" ? "sm:col-span-3" : "sm:col-span-5"}>
+                  <div className="sm:col-span-2">
+                    <Label>Source</Label>
+                    <Select
+                      value={itemMode}
+                      onValueChange={(value: "inventory" | "manual") => {
+                        setValue(`items.${index}.mode`, value);
+                        setValue(`items.${index}.description`, "");
+                        setValue(`items.${index}.unit_price`, 0);
+                        setValue(`items.${index}.part_id`, undefined);
+                        setSelectedItemIds((prev) => ({ ...prev, [index]: "" }));
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="inventory">Inventory</SelectItem>
+                        <SelectItem value="manual">Manual Entry</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className={itemType === "part" ? "sm:col-span-3" : "sm:col-span-4"}>
                     <Label>Description</Label>
-                    {itemType === "part" ? (
-                      <SearchableSelect
-                        options={partOptions}
-                        value={selectedItemIds[index] || ""}
-                        onValueChange={(value) => handlePartSelect(index, value)}
-                        placeholder="Select a part"
-                        searchPlaceholder="Search parts..."
-                        emptyMessage="No parts found."
-                      />
+                    {itemMode === "inventory" ? (
+                      itemType === "part" ? (
+                        <SearchableSelect
+                          options={partOptions}
+                          value={selectedItemIds[index] || ""}
+                          onValueChange={(value) => handlePartSelect(index, value)}
+                          placeholder="Select a part"
+                          searchPlaceholder="Search parts..."
+                          emptyMessage="No parts found."
+                        />
+                      ) : (
+                        <SearchableSelect
+                          options={serviceOptions}
+                          value={selectedItemIds[index] || ""}
+                          onValueChange={(value) => handleServiceSelect(index, value)}
+                          placeholder="Select a service"
+                          searchPlaceholder="Search services..."
+                          emptyMessage="No services found."
+                        />
+                      )
                     ) : (
-                      <SearchableSelect
-                        options={serviceOptions}
-                        value={selectedItemIds[index] || ""}
-                        onValueChange={(value) => handleServiceSelect(index, value)}
-                        placeholder="Select a service"
-                        searchPlaceholder="Search services..."
-                        emptyMessage="No services found."
+                      <Input
+                        placeholder={itemType === "part" ? "Enter custom part name..." : "Enter custom service name..."}
+                        {...register(`items.${index}.description`)}
                       />
                     )}
                   </div>
 
+                  {/* Quantity - only show for parts */}
                   {itemType === "part" ? (
-                    <div className="sm:col-span-2">
-                      <Label>Quantity</Label>
+                    <div className="sm:col-span-1">
+                      <Label>Qty</Label>
                       <Input
                         type="number"
                         min="1"
@@ -522,26 +601,26 @@ export function EditQuotationForm({ quotation, existingItems, parts, services, c
                     />
                   </div>
 
-                  <div className="sm:col-span-2 flex items-end">
-                    <div>
-                      <Label className="text-slate-400">Total</Label>
-                      <p className="text-sm font-medium mt-2">{formatCurrency(lineTotal)}</p>
-                    </div>
+                  <div className="sm:col-span-1 flex flex-col justify-end h-full min-h-[58px]">
+                    <Label className="text-slate-400">Total</Label>
+                    <p className="text-sm font-medium mt-2">{formatCurrency(lineTotal)}</p>
                   </div>
 
-                  <div className="sm:col-span-1 flex items-end justify-end">
+                  <div className="sm:col-span-1 flex items-center justify-end h-full min-h-[58px] pt-5">
                     {fields.length > 1 && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
                         onClick={() => remove(index)}
                       >
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
 
+                  {/* Model and Serial fields - Desktop (only for parts) */}
                   {itemType === "part" && (
                     <>
                       <div className="sm:col-span-6 pt-2 border-t border-dashed">

@@ -40,12 +40,12 @@ function businessDateParts(now: Date = new Date()): { yy: string; mm: string; dd
 
 export function generateInvoiceNumber(): string {
   const { yy, mm, dd } = businessDateParts()
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase()
+  const random = Math.floor(1000 + Math.random() * 9000).toString()
   return `INV-${yy}${mm}${dd}-${random}`
 }
 
 export function generateQuotationNumber(): string {
   const { yy, mm, dd } = businessDateParts()
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase()
+  const random = Math.floor(1000 + Math.random() * 9000).toString()
   return `QTN-${yy}${mm}${dd}-${random}`
 }

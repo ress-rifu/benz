@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   TrendingUp,
   TrendingDown,
+  Package,
 } from "lucide-react";
 import { useLanguage } from "@/lib/language/language-context";
 
@@ -16,6 +17,7 @@ interface DashboardSummary {
   totalRevenue: number;
   outstandingBalance: number;
   revenueGrowth: number;
+  totalInventoryValue?: number;
 }
 
 interface FinanceCardsProps {
@@ -26,7 +28,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
   const { t } = useLanguage();
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       <Card className="bg-linear-to-br from-green-50 to-green-100 border-green-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-green-700">
@@ -99,6 +101,23 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
           <p className="text-xs text-orange-600">Due invoices</p>
         </CardContent>
       </Card>
+
+      {summary.totalInventoryValue !== undefined && (
+        <Card className="bg-linear-to-br from-indigo-50 to-indigo-100 border-indigo-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-indigo-700">
+              Inventory Value (Cost)
+            </CardTitle>
+            <Package className="h-4 w-4 text-indigo-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-indigo-800">
+              {formatCurrency(summary.totalInventoryValue)}
+            </div>
+            <p className="text-xs text-indigo-600">Sum of parts cost price</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
