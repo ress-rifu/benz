@@ -52,7 +52,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
                 <span className="text-red-600">{summary.revenueGrowth.toFixed(1)}%</span>
               </>
             )}
-            <span className="text-slate-500">vs last month</span>
+            <span className="text-slate-500">{t("dashboard.vsLastMonth")}</span>
           </div>
         </CardContent>
       </Card>
@@ -68,7 +68,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
           <div className="text-2xl font-bold text-blue-800">
             {formatCurrency(summary.weeklyRevenue)}
           </div>
-          <p className="text-xs text-blue-600">Paid invoices, last 7 days</p>
+          <p className="text-xs text-blue-600">{t("dashboard.paidInvoicesLast7Days")}</p>
         </CardContent>
       </Card>
 
@@ -83,7 +83,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
           <div className="text-2xl font-bold text-amber-800">
             {formatCurrency(summary.totalRevenue)}
           </div>
-          <p className="text-xs text-amber-600">All paid invoices</p>
+          <p className="text-xs text-amber-600">{t("dashboard.allPaidInvoices")}</p>
         </CardContent>
       </Card>
 
@@ -98,7 +98,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
           <div className="text-2xl font-bold text-orange-800">
             {formatCurrency(summary.outstandingBalance)}
           </div>
-          <p className="text-xs text-orange-600">Due invoices</p>
+          <p className="text-xs text-orange-600">{t("dashboard.dueInvoices")}</p>
         </CardContent>
       </Card>
 
@@ -106,7 +106,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
         <Card className="bg-linear-to-br from-indigo-50 to-indigo-100 border-indigo-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-indigo-700">
-              Inventory Value (Cost)
+              {t("dashboard.inventoryValueCost")}
             </CardTitle>
             <Package className="h-4 w-4 text-indigo-600" />
           </CardHeader>
@@ -114,7 +114,7 @@ export function FinanceCards({ summary }: FinanceCardsProps) {
             <div className="text-2xl font-bold text-indigo-800">
               {formatCurrency(summary.totalInventoryValue)}
             </div>
-            <p className="text-xs text-indigo-600">Sum of parts cost price</p>
+            <p className="text-xs text-indigo-600">{t("dashboard.sumPartsCostPrice")}</p>
           </CardContent>
         </Card>
       )}

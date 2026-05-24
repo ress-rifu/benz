@@ -8,8 +8,8 @@ export function DashboardHeader() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900">{t("dashboard.title")}</h1>
-      <p className="text-slate-500">
-        Welcome to Benz Automobile management system
+      <p className="text-slate-500 font-medium">
+        {t("dashboard.welcome")}
       </p>
     </div>
   );

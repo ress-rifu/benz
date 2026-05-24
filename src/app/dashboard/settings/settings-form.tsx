@@ -26,12 +26,14 @@ import { toast } from "@/hooks/use-toast";
 import { Loader2, Upload } from "lucide-react";
 import type { Tables } from "@/types/database";
 import Image from "next/image";
+import { useLanguage } from "@/lib/language/language-context";
 
 interface SettingsFormProps {
   settings: Tables<"invoice_settings">;
 }
 
 export function SettingsForm({ settings }: SettingsFormProps) {
+  const { t } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [isUploading, startUploadTransition] = useTransition();
   const [isUploadingHeader, startUploadHeaderTransition] = useTransition();
@@ -99,8 +101,8 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       } else if (result?.url) {
         setValue("logo_url", result.url);
         toast({
-          title: "Success",
-          description: "Logo uploaded successfully",
+          title: t("forms.success"),
+          description: t("settings.successLogo"),
         });
       }
     });
@@ -119,15 +121,15 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
       if (result?.error) {
         toast({
-          title: "Error",
+          title: t("forms.error"),
           description: result.error,
           variant: "destructive",
         });
       } else if (result?.url) {
         setValue("header_image_url", result.url);
         toast({
-          title: "Success",
-          description: "Header image uploaded successfully",
+          title: t("forms.success"),
+          description: t("settings.successHeader"),
         });
       }
     });
@@ -146,15 +148,15 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
       if (result?.error) {
         toast({
-          title: "Error",
+          title: t("forms.error"),
           description: result.error,
           variant: "destructive",
         });
       } else if (result?.url) {
         setValue("footer_image_url", result.url);
         toast({
-          title: "Success",
-          description: "Footer image uploaded successfully",
+          title: t("forms.success"),
+          description: t("settings.successFooter"),
         });
       }
     });
@@ -166,14 +168,14 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
       if (result?.error) {
         toast({
-          title: "Error",
+          title: t("forms.error"),
           description: result.error,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Success",
-          description: "Settings saved successfully",
+          title: t("forms.success"),
+          description: t("settings.successSave"),
         });
       }
     });
@@ -181,16 +183,22 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Settings Page Header */}
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{t("dashboard.settings")}</h1>
+        <p className="text-sm text-slate-500">{t("settings.customizeSubtitle")}</p>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Logo & Branding */}
         <Card>
           <CardHeader>
-            <CardTitle>Branding</CardTitle>
-            <CardDescription>Customize your invoice appearance</CardDescription>
+            <CardTitle>{t("settings.branding")}</CardTitle>
+            <CardDescription>{t("settings.customizeAppearance")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Logo</Label>
+              <Label>{t("settings.logo")}</Label>
               <div className="flex items-center gap-4">
                 {logoUrl ? (
                   <div className="relative h-16 w-32 overflow-hidden rounded-lg border bg-slate-50">
@@ -205,7 +213,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                   </div>
                 ) : (
                   <div className="flex h-16 w-32 items-center justify-center rounded-lg border border-dashed bg-slate-50 text-sm text-slate-400">
-                    No logo
+                    {t("settings.noLogo")}
                   </div>
                 )}
                 <div>
@@ -228,7 +236,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                     ) : (
                       <Upload className="mr-2 h-4 w-4" />
                     )}
-                    Upload
+                    {t("settings.upload")}
                   </Button>
                 </div>
               </div>
@@ -236,7 +244,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="primary_color">Primary Color</Label>
+                <Label htmlFor="primary_color">{t("settings.primaryColor")}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="primary_color"
@@ -258,7 +266,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="secondary_color">Secondary Color</Label>
+                <Label htmlFor="secondary_color">{t("settings.secondaryColor")}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="secondary_color"
@@ -283,20 +291,20 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             <Separator />
             
             <div className="space-y-2">
-              <Label>Document Font Size</Label>
+              <Label>{t("settings.fontSize")}</Label>
               <Select
                 value={watch("font_size")}
                 onValueChange={(value) => setValue("font_size", value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select text size" />
+                  <SelectValue placeholder={t("settings.selectSize")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="text-xs">Extra Small</SelectItem>
-                  <SelectItem value="text-sm">Small (Default)</SelectItem>
-                  <SelectItem value="text-base">Medium</SelectItem>
-                  <SelectItem value="text-lg">Large</SelectItem>
-                  <SelectItem value="text-xl">Extra Large</SelectItem>
+                  <SelectItem value="text-xs">{t("settings.sizeXs")}</SelectItem>
+                  <SelectItem value="text-sm">{t("settings.sizeSm")}</SelectItem>
+                  <SelectItem value="text-base">{t("settings.sizeMd")}</SelectItem>
+                  <SelectItem value="text-lg">{t("settings.sizeLg")}</SelectItem>
+                  <SelectItem value="text-xl">{t("settings.sizeXl")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -304,7 +312,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             <Separator />
 
             <div className="space-y-2">
-              <Label htmlFor="vat_reg_no">VAT REG NO.(BIN)</Label>
+              <Label htmlFor="vat_reg_no">{t("settings.vatRegNo")}</Label>
               <Input
                 id="vat_reg_no"
                 placeholder="e.g., 123456789-0101"
@@ -322,19 +330,19 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         {/* Header & Footer */}
         <Card>
           <CardHeader>
-            <CardTitle>Text Content</CardTitle>
+            <CardTitle>{t("settings.textContent")}</CardTitle>
             <CardDescription>
-              Customize header and footer messages
+              {t("settings.customizeMessages")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="header_text">Header Text</Label>
+              <Label htmlFor="header_text">{t("settings.headerText")}</Label>
               <Textarea id="header_text" {...register("header_text")} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="footer_text">Footer Text</Label>
+              <Label htmlFor="footer_text">{t("settings.footerText")}</Label>
               <Textarea id="footer_text" {...register("footer_text")} />
             </div>
           </CardContent>
@@ -344,15 +352,15 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       {/* PDF Margins */}
       <Card>
         <CardHeader>
-          <CardTitle>PDF Margins</CardTitle>
+          <CardTitle>{t("settings.margins")}</CardTitle>
           <CardDescription>
-            Adjust print margins (in mm) for invoices
+            {t("settings.adjustMargins")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
-              <Label htmlFor="margin_top">Top</Label>
+              <Label htmlFor="margin_top">{t("settings.marginTop")}</Label>
               <Input
                 id="margin_top"
                 type="number"
@@ -362,7 +370,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="margin_right">Right</Label>
+              <Label htmlFor="margin_right">{t("settings.marginRight")}</Label>
               <Input
                 id="margin_right"
                 type="number"
@@ -372,7 +380,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="margin_bottom">Bottom</Label>
+              <Label htmlFor="margin_bottom">{t("settings.marginBottom")}</Label>
               <Input
                 id="margin_bottom"
                 type="number"
@@ -382,7 +390,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="margin_left">Left</Label>
+              <Label htmlFor="margin_left">{t("settings.marginLeft")}</Label>
               <Input
                 id="margin_left"
                 type="number"
@@ -399,8 +407,8 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Header Image</CardTitle>
-            <CardDescription>Upload a custom header image for invoices</CardDescription>
+            <CardTitle>{t("settings.headerImage")}</CardTitle>
+            <CardDescription>{t("settings.uploadHeaderDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
@@ -417,7 +425,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                 </div>
               ) : (
                 <div className="flex h-16 w-full max-w-xs items-center justify-center rounded-lg border border-dashed bg-slate-50 text-sm text-slate-400">
-                  No header image
+                  {t("settings.noHeaderImage")}
                 </div>
               )}
               <div>
@@ -440,13 +448,13 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                   ) : (
                     <Upload className="mr-2 h-4 w-4" />
                   )}
-                  Upload
+                  {t("settings.upload")}
                 </Button>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="show_header_image" className="cursor-pointer">
-                Show Header Image
+                {t("settings.showHeaderImage")}
               </Label>
               <Switch
                 id="show_header_image"
@@ -459,8 +467,8 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Footer Image</CardTitle>
-            <CardDescription>Upload a custom footer image for invoices</CardDescription>
+            <CardTitle>{t("settings.footerImage")}</CardTitle>
+            <CardDescription>{t("settings.uploadFooterDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
@@ -477,7 +485,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                 </div>
               ) : (
                 <div className="flex h-16 w-full max-w-xs items-center justify-center rounded-lg border border-dashed bg-slate-50 text-sm text-slate-400">
-                  No footer image
+                  {t("settings.noFooterImage")}
                 </div>
               )}
               <div>
@@ -500,13 +508,13 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                   ) : (
                     <Upload className="mr-2 h-4 w-4" />
                   )}
-                  Upload
+                  {t("settings.upload")}
                 </Button>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="show_footer_image" className="cursor-pointer">
-                Show Footer Image
+                {t("settings.showFooterImage")}
               </Label>
               <Switch
                 id="show_footer_image"
@@ -521,16 +529,16 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       {/* Visibility Toggles */}
       <Card>
         <CardHeader>
-          <CardTitle>Field Visibility</CardTitle>
+          <CardTitle>{t("settings.fieldVisibility")}</CardTitle>
           <CardDescription>
-            Choose which fields to display on invoices
+            {t("settings.visibilityDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <div className="flex items-center justify-between">
               <Label htmlFor="show_logo" className="cursor-pointer">
-                Show Logo
+                {t("settings.showLogo")}
               </Label>
               <Switch
                 id="show_logo"
@@ -541,7 +549,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="show_header" className="cursor-pointer">
-                Show Header Text
+                {t("settings.showHeader")}
               </Label>
               <Switch
                 id="show_header"
@@ -552,7 +560,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="show_footer" className="cursor-pointer">
-                Show Footer Text
+                {t("settings.showFooter")}
               </Label>
               <Switch
                 id="show_footer"
@@ -565,7 +573,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="show_customer_email" className="cursor-pointer">
-                Customer Email
+                {t("settings.customerEmail")}
               </Label>
               <Switch
                 id="show_customer_email"
@@ -578,7 +586,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="show_customer_phone" className="cursor-pointer">
-                Customer Phone
+                {t("settings.customerPhone")}
               </Label>
               <Switch
                 id="show_customer_phone"
@@ -591,7 +599,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="show_customer_address" className="cursor-pointer">
-                Customer Address
+                {t("settings.customerAddress")}
               </Label>
               <Switch
                 id="show_customer_address"
@@ -606,7 +614,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="show_vehicle_vin" className="cursor-pointer">
-                Vehicle VIN
+                {t("settings.vehicleVin")}
               </Label>
               <Switch
                 id="show_vehicle_vin"
@@ -619,7 +627,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="show_vehicle_license" className="cursor-pointer">
-                License Plate
+                {t("settings.licensePlate")}
               </Label>
               <Switch
                 id="show_vehicle_license"
@@ -632,7 +640,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
             <div className="flex items-center justify-between">
               <Label htmlFor="show_vat_reg_no" className="cursor-pointer">
-                VAT REG NO.(BIN)
+                {t("settings.vatRegNo")}
               </Label>
               <Switch
                 id="show_vat_reg_no"
@@ -648,8 +656,14 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
-          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Save Settings
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {t("settings.saving")}
+            </>
+          ) : (
+            t("settings.saveSettings")
+          )}
         </Button>
       </div>
     </form>
