@@ -15,6 +15,9 @@ interface PageProps {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function SalesPage({ searchParams }: PageProps) {
   const user = await getUser();
 

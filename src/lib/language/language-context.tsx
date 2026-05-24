@@ -137,6 +137,8 @@ const translations = {
       confirmMarkPaidDesc: "এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না",
       alreadyPaid: "ইতিমধ্যে পরিশোধিত",
       statusUpdated: "স্ট্যাটাস আপডেট হয়েছে",
+      advance: "অগ্রিম",
+      dueAmount: "বকেয়া পরিমাণ",
     },
     
     // Quotations
@@ -507,6 +509,8 @@ const translations = {
       confirmMarkPaidDesc: "This action cannot be undone",
       alreadyPaid: "Already marked as paid",
       statusUpdated: "Status updated successfully",
+      advance: "Advance",
+      dueAmount: "Due Amount",
     },
     
     // Quotations

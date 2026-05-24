@@ -138,6 +138,7 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
           title: "Success",
           description: "Invoice marked as paid",
         });
+        router.refresh();
       }
     });
   };
@@ -194,9 +195,10 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                 <AlertDialogHeader>
                   <AlertDialogTitle>Mark Invoice as Paid?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will update the invoice status to "Paid" and include it in revenue
-                    calculations. This action will update the dashboard and sales reports
-                    immediately.
+                    This will mark the remaining due amount of{" "}
+                    <strong>{formatCurrency(invoice.total - (invoice.advance_amount || 0))}</strong>{" "}
+                    as collected and update the invoice status to "Paid". This action will update
+                    the dashboard and sales reports immediately.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -503,10 +505,22 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
                   <div className="px-3 py-1.5 border-r border-slate-300 font-semibold bg-slate-50 w-32">Discount</div>
                   <div className="px-3 py-1.5 w-28">{invoice.discount_amount.toFixed(2)}</div>
                 </div>
-                <div className="flex bg-slate-100">
+                <div className="flex border-b border-slate-300 bg-slate-100">
                   <div className="px-3 py-1.5 border-r border-slate-300 font-bold w-32">Total Bill Amount</div>
                   <div className="px-3 py-1.5 w-28 font-bold">{invoice.total.toFixed(2)}</div>
                 </div>
+                {(invoice.advance_amount || 0) > 0 && (
+                  <>
+                    <div className="flex border-b border-slate-300">
+                      <div className="px-3 py-1.5 border-r border-slate-300 font-semibold bg-green-50 text-green-700 w-32">Advance</div>
+                      <div className="px-3 py-1.5 w-28 text-green-700">{(invoice.advance_amount || 0).toFixed(2)}</div>
+                    </div>
+                    <div className="flex bg-orange-50">
+                      <div className="px-3 py-1.5 border-r border-slate-300 font-bold text-orange-700 w-32">Due Amount</div>
+                      <div className="px-3 py-1.5 w-28 font-bold text-orange-700">{(invoice.total - (invoice.advance_amount || 0)).toFixed(2)}</div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -515,7 +529,12 @@ export function InvoiceView({ invoice, items, settings, isSuperAdmin, billedByNa
           {isSuperAdmin && (
             <div className="border border-slate-300 px-3 py-2 bg-slate-50">
               <span className="font-semibold">In word:</span>
-              <span className="ml-2">{numberToWords(invoice.total)} Taka Only</span>
+              <span className="ml-2">
+                {(invoice.advance_amount || 0) > 0
+                  ? `${numberToWords(invoice.total - (invoice.advance_amount || 0))} Taka Only (Due)`
+                  : `${numberToWords(invoice.total)} Taka Only`
+                }
+              </span>
             </div>
           )}
 

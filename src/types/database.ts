@@ -122,6 +122,7 @@ export interface Database {
           tax_rate: number;
           tax_amount: number;
           discount_amount: number;
+          advance_amount: number;
           total: number;
           notes: string | null;
           status: InvoiceStatus;
@@ -149,6 +150,7 @@ export interface Database {
           tax_rate?: number;
           tax_amount?: number;
           discount_amount?: number;
+          advance_amount?: number;
           total: number;
           notes?: string | null;
           status?: InvoiceStatus;

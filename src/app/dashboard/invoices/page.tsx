@@ -11,6 +11,9 @@ interface PageProps {
   searchParams: Promise<{ q?: string; page?: string; pageSize?: string }>;
 }
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function InvoicesPage({ searchParams }: PageProps) {
   const [sp, user] = await Promise.all([searchParams, getUser()]);
 

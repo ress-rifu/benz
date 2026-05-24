@@ -5,6 +5,9 @@ import { DashboardHeader } from "./dashboard-header";
 import { getUser } from "@/lib/auth/get-user";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function DashboardPage() {
   const user = await getUser();
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -35,6 +37,12 @@ export function InvoicesTableClient({
   page,
   pageSize,
 }: InvoicesTableClientProps) {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
+
   if (invoices.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-slate-300 p-12 text-center">
@@ -88,7 +96,12 @@ export function InvoicesTableClient({
                 </TableCell>
                 {isSuperAdmin && (
                   <TableCell className="text-right font-medium">
-                    {formatCurrency(invoice.total)}
+                    <div>{formatCurrency(invoice.total)}</div>
+                    {invoice.status === "due" && (invoice.advance_amount || 0) > 0 && (
+                      <div className="text-xs text-orange-600 mt-0.5">
+                        Due: {formatCurrency(invoice.total - (invoice.advance_amount || 0))}
+                      </div>
+                    )}
                   </TableCell>
                 )}
                 <TableCell>
@@ -154,6 +167,11 @@ export function InvoicesTableClient({
                 <p className="text-right font-semibold text-slate-900">
                   {formatCurrency(invoice.total)}
                 </p>
+                {invoice.status === "due" && (invoice.advance_amount || 0) > 0 && (
+                  <p className="text-right text-xs text-orange-600 mt-0.5">
+                    Due: {formatCurrency(invoice.total - (invoice.advance_amount || 0))}
+                  </p>
+                )}
               </div>
             )}
           </Link>

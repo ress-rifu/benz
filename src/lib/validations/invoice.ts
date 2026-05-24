@@ -24,6 +24,7 @@ export const invoiceSchema = z.object({
   driver_name: z.string().max(255).optional().nullable(),
   tax_rate: z.number().min(0).max(100),
   discount_amount: z.number().min(0),
+  advance_amount: z.number().min(0),
   notes: z.string().max(2000).optional().nullable(),
   status: z.enum(["due", "paid"]),
   items: z.array(invoiceItemSchema).min(1, "At least one item is required"),

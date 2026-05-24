@@ -112,6 +112,7 @@ export async function createInvoice(input: InvoiceInput) {
         tax_rate: data.tax_rate,
         tax_amount: taxAmount,
         discount_amount: data.discount_amount,
+        advance_amount: data.advance_amount || 0,
         total,
         notes: data.notes || null,
         status: data.status,

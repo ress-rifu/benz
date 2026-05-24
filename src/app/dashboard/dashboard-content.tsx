@@ -74,7 +74,7 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
     ] = await Promise.all([
       supabase.from("parts").select("id, quantity, min_stock_level").eq("is_active", true),
       supabase.from("invoices").select("*", { count: "exact", head: true }),
-      supabase.from("invoices").select("total, status"),
+      supabase.from("invoices").select("total, status, advance_amount"),
       supabase.from("invoices").select("total, status")
         .gte("created_at", last7Days.from)
         .lt("created_at", last7Days.to),
@@ -102,9 +102,9 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
     const totalRevenue = allInvoicesResult.data?.filter(inv => inv.status === "paid")
       .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
 
-    // Calculate outstanding balance from DUE invoices
+    // Calculate outstanding balance from DUE invoices (total - advance)
     const outstandingBalance = allInvoicesResult.data?.filter(inv => inv.status === "due")
-      .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;
+      .reduce((sum, inv) => sum + Number(inv.total) - Number((inv as any).advance_amount || 0), 0) || 0;
 
     const weeklyRevenue = weeklyInvoicesResult.data?.filter(inv => inv.status === "paid")
       .reduce((sum, inv) => sum + Number(inv.total), 0) || 0;

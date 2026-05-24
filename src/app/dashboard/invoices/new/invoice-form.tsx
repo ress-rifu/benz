@@ -89,6 +89,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
       vehicle_mileage: undefined,
       tax_rate: 0,
       discount_amount: 0,
+      advance_amount: 0,
       notes: "",
       status: "paid",
       items: [{ type: "service", description: "", quantity: 1, unit_price: 0 }],
@@ -103,6 +104,8 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
   const watchedItems = watch("items");
   const watchedTaxRate = watch("tax_rate") || 0;
   const watchedDiscount = watch("discount_amount") || 0;
+  const watchedStatus = watch("status") || "paid";
+  const watchedAdvance = watchedStatus === "paid" ? 0 : (watch("advance_amount") || 0);
 
   const subtotal = watchedItems.reduce((sum, item) => {
     return sum + (item.quantity || 0) * (item.unit_price || 0);
@@ -110,6 +113,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
 
   const taxAmount = subtotal * (watchedTaxRate / 100);
   const total = subtotal + taxAmount - watchedDiscount;
+  const dueAmount = total - watchedAdvance;
 
   const handlePartSelect = (index: number, partId: string) => {
     const part = parts.find((p) => p.id === partId);
@@ -621,7 +625,7 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
             <CardTitle className="text-lg">Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className={`grid gap-4 ${watchedStatus === "due" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
               <div className="space-y-2">
                 <Label htmlFor="tax_rate">Tax Rate (%)</Label>
                 <Input
@@ -640,13 +644,30 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                   {...register("discount_amount", { valueAsNumber: true })}
                 />
               </div>
+              {watchedStatus === "due" && (
+                <div className="space-y-2">
+                  <Label htmlFor="advance_amount">Advance (৳)</Label>
+                  <Input
+                    id="advance_amount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    {...register("advance_amount", { valueAsNumber: true })}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="status">Payment Status</Label>
               <Select
-                value={watch("status") || "paid"}
-                onValueChange={(value: "due" | "paid") => setValue("status", value)}
+                value={watchedStatus}
+                onValueChange={(value: "due" | "paid") => {
+                  setValue("status", value);
+                  if (value === "paid") {
+                    setValue("advance_amount", 0);
+                  }
+                }}
               >
                 <SelectTrigger id="status">
                   <SelectValue />
@@ -685,6 +706,21 @@ export function InvoiceForm({ parts, services, customers }: InvoiceFormProps) {
                 <span>Total</span>
                 <span>{formatCurrency(total)}</span>
               </div>
+              {watchedAdvance > 0 && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Advance</span>
+                    <span className="font-medium text-green-600">
+                      -{formatCurrency(watchedAdvance)}
+                    </span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-lg font-bold">
+                    <span className="text-orange-600">Due Amount</span>
+                    <span className="text-orange-600">{formatCurrency(dueAmount)}</span>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
@@ -57,6 +59,11 @@ interface DashboardContentClientProps {
 
 export function DashboardContentClient({ isSuperAdmin, summary }: DashboardContentClientProps) {
   const { t } = useLanguage();
+  const router = useRouter();
+
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
 
   return (
     <div className="space-y-6">
