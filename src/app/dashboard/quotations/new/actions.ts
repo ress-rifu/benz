@@ -28,6 +28,10 @@ async function getInvoiceSettings(supabase: Awaited<ReturnType<typeof createClie
     show_customer_address: true,
     vat_reg_no: null,
     show_vat_reg_no: true,
+    watermark_text: "RIFLAB Software Ltd. : 01518937762",
+    watermark_size: 4,
+    watermark_color: "#94a3b8",
+    show_watermark: true,
   };
 }
 

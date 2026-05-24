@@ -253,6 +253,10 @@ export interface Database {
           font_size: string;
           vat_reg_no: string | null;
           show_vat_reg_no: boolean;
+          watermark_text?: string | null;
+          watermark_size?: number | null;
+          watermark_color?: string | null;
+          show_watermark?: boolean | null;
           created_at: string;
           updated_at: string;
         };
@@ -282,6 +286,10 @@ export interface Database {
           font_size?: string;
           vat_reg_no?: string | null;
           show_vat_reg_no?: boolean;
+          watermark_text?: string | null;
+          watermark_size?: number | null;
+          watermark_color?: string | null;
+          show_watermark?: boolean | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -311,6 +319,10 @@ export interface Database {
           font_size?: string;
           vat_reg_no?: string | null;
           show_vat_reg_no?: boolean;
+          watermark_text?: string | null;
+          watermark_size?: number | null;
+          watermark_color?: string | null;
+          show_watermark?: boolean | null;
           created_at?: string;
           updated_at?: string;
         };

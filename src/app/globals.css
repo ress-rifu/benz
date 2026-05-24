@@ -144,6 +144,14 @@
   }
 }
 
+/* Default display states (Screen vs Print) */
+.print-only-watermark {
+  display: none !important;
+}
+.screen-only {
+  display: block;
+}
+
 @media print {
   @page {
     size: A4;
@@ -173,6 +181,19 @@
   /* Hide modal overlay when printing */
   [data-radix-dialog-overlay] {
     display: none !important;
+  }
+
+  /* Hide screen-only elements during print */
+  .screen-only {
+    display: none !important;
+  }
+
+  /* Decouple print-only watermark from flex document card and position 2mm from physical edge */
+  .print-only-watermark {
+    display: block !important;
+    position: fixed !important;
+    bottom: calc(2mm - var(--print-margin-bottom, 10mm)) !important;
+    right: calc(2mm - var(--print-margin-right, 10mm)) !important;
   }
 
   /* ========================================

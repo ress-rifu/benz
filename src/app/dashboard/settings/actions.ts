@@ -51,6 +51,10 @@ export async function updateInvoiceSettings(
         font_size: parsed.data.font_size,
         vat_reg_no: parsed.data.vat_reg_no || null,
         show_vat_reg_no: parsed.data.show_vat_reg_no,
+        watermark_text: parsed.data.watermark_text || null,
+        watermark_size: parsed.data.watermark_size || null,
+        watermark_color: parsed.data.watermark_color || null,
+        show_watermark: parsed.data.show_watermark,
       })
       .eq("id", id);
 

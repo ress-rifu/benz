@@ -54,6 +54,10 @@ export const invoiceSettingsSchema = z.object({
   font_size: z.string(),
   vat_reg_no: z.string().max(100).optional().nullable().or(z.literal("")),
   show_vat_reg_no: z.boolean(),
+  watermark_text: z.string().max(100).optional().nullable().or(z.literal("")),
+  watermark_size: z.number().int().min(2).max(24).optional().nullable(),
+  watermark_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid color format").optional().nullable().or(z.literal("")),
+  show_watermark: z.boolean().optional().nullable(),
 });
 
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;

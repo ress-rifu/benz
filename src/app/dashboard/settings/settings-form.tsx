@@ -75,6 +75,10 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       font_size: settings.font_size ?? "text-sm",
       vat_reg_no: settings.vat_reg_no || "",
       show_vat_reg_no: settings.show_vat_reg_no ?? true,
+      watermark_text: settings.watermark_text ?? "RIFLAB Software Ltd. : 01518937762",
+      watermark_size: settings.watermark_size ?? 4,
+      watermark_color: settings.watermark_color ?? "#94a3b8",
+      show_watermark: settings.show_watermark ?? true,
     },
   });
 
@@ -346,6 +350,82 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               <Textarea id="footer_text" {...register("footer_text")} />
             </div>
           </CardContent>
+        </Card>
+
+        {/* Watermark Settings */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>{t("settings.watermarkTitle")}</CardTitle>
+                <CardDescription>
+                  {t("settings.watermarkDesc")}
+                </CardDescription>
+              </div>
+              <Switch
+                id="show_watermark"
+                checked={watch("show_watermark") ?? true}
+                onCheckedChange={(checked) => setValue("show_watermark", checked)}
+              />
+            </div>
+          </CardHeader>
+          {(watch("show_watermark") ?? true) && (
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="watermark_text">{t("settings.watermarkText")}</Label>
+                <Input
+                  id="watermark_text"
+                  placeholder="RIFLAB Software Ltd. : 01518937762"
+                  {...register("watermark_text")}
+                />
+                {errors.watermark_text && (
+                  <p className="text-sm text-red-500">
+                    {errors.watermark_text.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="watermark_size">{t("settings.watermarkSize")}</Label>
+                  <Input
+                    id="watermark_size"
+                    type="number"
+                    min={2}
+                    max={24}
+                    {...register("watermark_size", { valueAsNumber: true })}
+                  />
+                  {errors.watermark_size && (
+                    <p className="text-sm text-red-500">
+                      {errors.watermark_size.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="watermark_color">{t("settings.watermarkColor")}</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="watermark_color"
+                      {...register("watermark_color")}
+                      className="flex-1"
+                    />
+                    <input
+                      type="color"
+                      value={watch("watermark_color") || "#94a3b8"}
+                      onChange={(e) => setValue("watermark_color", e.target.value)}
+                      className="h-10 w-10 cursor-pointer rounded border border-slate-200"
+                    />
+                  </div>
+                  {errors.watermark_color && (
+                    <p className="text-sm text-red-500">
+                      {errors.watermark_color.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          )}
         </Card>
       </div>
 

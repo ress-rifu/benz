@@ -30,6 +30,10 @@ interface InvoiceSettings {
   font_size: string;
   vat_reg_no: string | null;
   show_vat_reg_no: boolean;
+  watermark_text?: string | null;
+  watermark_size?: number | null;
+  watermark_color?: string | null;
+  show_watermark?: boolean | null;
 }
 
 const DEFAULT_SETTINGS: InvoiceSettings = {
@@ -57,6 +61,10 @@ const DEFAULT_SETTINGS: InvoiceSettings = {
   font_size: "text-sm",
   vat_reg_no: null,
   show_vat_reg_no: true,
+  watermark_text: "RIFLAB Software Ltd. : 01518937762",
+  watermark_size: 4,
+  watermark_color: "#94a3b8",
+  show_watermark: true,
 };
 
 async function getQuotation(id: string) {

@@ -48,6 +48,10 @@ interface InvoiceSettings {
   font_size: string;
   vat_reg_no: string | null;
   show_vat_reg_no: boolean;
+  watermark_text?: string | null;
+  watermark_size?: number | null;
+  watermark_color?: string | null;
+  show_watermark?: boolean | null;
 }
 
 // Convert number to words for quotation amount
@@ -135,7 +139,19 @@ export function QuotationView({ quotation, items, settings, isSuperAdmin, create
   };
 
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6"
+      style={
+        {
+          "--invoice-primary": settings.primary_color,
+          "--invoice-secondary": settings.secondary_color,
+          "--print-margin-top": `${settings.margin_top ?? 10}mm`,
+          "--print-margin-right": `${settings.margin_right ?? 10}mm`,
+          "--print-margin-bottom": `${settings.margin_bottom ?? 10}mm`,
+          "--print-margin-left": `${settings.margin_left ?? 10}mm`,
+        } as React.CSSProperties
+      }
+    >
       {/* Header Actions - Hidden on Print */}
       <div className="flex items-center justify-between" data-print-hide="true">
         <div className="flex items-center gap-4">
@@ -190,17 +206,7 @@ export function QuotationView({ quotation, items, settings, isSuperAdmin, create
       {/* Quotation Document */}
       <div
         data-invoice-document="true"
-        className={`mx-auto max-w-4xl bg-white shadow-xs print:shadow-none print:max-w-none print:mx-0 ${settings.font_size || "text-sm"}`}
-        style={
-          {
-            "--invoice-primary": settings.primary_color,
-            "--invoice-secondary": settings.secondary_color,
-            "--print-margin-top": `${settings.margin_top ?? 10}mm`,
-            "--print-margin-right": `${settings.margin_right ?? 10}mm`,
-            "--print-margin-bottom": `${settings.margin_bottom ?? 10}mm`,
-            "--print-margin-left": `${settings.margin_left ?? 10}mm`,
-          } as React.CSSProperties
-        }
+        className={`mx-auto max-w-4xl bg-white shadow-xs print:shadow-none print:max-w-none print:mx-0 relative ${settings.font_size || "text-sm"}`}
       >
         {/* Header - Full Width Image OR Coded Banner */}
         {settings.show_header_image && settings.header_image_url ? (
@@ -501,7 +507,49 @@ export function QuotationView({ quotation, items, settings, isSuperAdmin, create
             </div>
           </div>
         </div>
+
+        {/* Screen-only Watermark */}
+        {settings.show_watermark !== false && (
+          <div
+            className="screen-only"
+            style={{
+              position: 'absolute',
+              bottom: '2px',
+              right: '2px',
+              fontSize: `${settings.watermark_size ?? 4}px`,
+              lineHeight: `${settings.watermark_size ?? 4}px`,
+              margin: '0',
+              padding: '0',
+              color: settings.watermark_color || '#94a3b8',
+              fontFamily: 'monospace',
+              pointerEvents: 'none',
+              userSelect: 'none',
+            }}
+          >
+            {settings.watermark_text || "RIFLAB Software Ltd. : 01518937762"}
+          </div>
+        )}
       </div>
+
+      {/* Print-only Watermark: placed outside the flexbox to prevent print engine layout bugs */}
+      {settings.show_watermark !== false && (
+        <div
+          className="print-only-watermark"
+          style={{
+            position: 'fixed',
+            fontSize: `${settings.watermark_size ?? 4}px`,
+            lineHeight: `${settings.watermark_size ?? 4}px`,
+            margin: '0',
+            padding: '0',
+            color: settings.watermark_color || '#94a3b8',
+            fontFamily: 'monospace',
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        >
+          {settings.watermark_text || "RIFLAB Software Ltd. : 01518937762"}
+        </div>
+      )}
     </div>
   );
 }
