@@ -20,9 +20,9 @@ export default function LoginPage() {
       </div>
 
       {/* Left Column: Login Form Panel */}
-      <div className="w-full md:w-[45%] lg:w-[40%] flex flex-col justify-between p-6 sm:p-12 md:p-16 z-10 bg-white/70 backdrop-blur-md border-r border-slate-200/80">
+      <div className="w-full md:w-[45%] lg:w-[40%] min-h-screen flex flex-col justify-between p-5 sm:p-12 md:p-16 z-10 bg-white/70 backdrop-blur-md border-r border-slate-200/80 overflow-y-auto">
         {/* Header Branding */}
-        <div className="flex items-center gap-3 mb-12 md:mb-0">
+        <div className="flex items-center gap-3 mb-8 md:mb-0">
           <img
             src="/logo.webp"
             alt="Benz Automobile Logo"
@@ -37,9 +37,9 @@ export default function LoginPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="w-full max-w-sm mx-auto my-auto space-y-8">
+        <div className="w-full max-w-sm mx-auto my-6 md:my-auto space-y-6 md:space-y-8">
           <div className="space-y-2">
-            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
               Welcome back
             </h2>
             <p className="text-slate-500 text-sm">
@@ -47,13 +47,13 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-200/30">
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-8 shadow-xl shadow-slate-200/30">
             <LoginForm />
           </div>
         </div>
 
         {/* Footer Area */}
-        <div className="mt-12 md:mt-0 pt-6 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-400">
+        <div className="mt-8 md:mt-0 pt-6 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-400">
           <p>© {new Date().getFullYear()} Benz Automobile.</p>
           <div className="flex items-center gap-1 font-medium">
             <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
