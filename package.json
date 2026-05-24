@@ -43,7 +43,8 @@
     "zod": "^4.4.1"
   },
   "overrides": {
-    "minimatch": "^10.2.1"
+    "minimatch": "^10.2.1",
+    "postcss": "^8.5.12"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.4",
